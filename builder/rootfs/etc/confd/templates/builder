@@ -88,52 +88,45 @@ fi
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
-    BUILD_OPTS=()
-    BUILD_OPTS+='/usr/bin/docker'
-    BUILD_OPTS+=' run -v /etc/environment_proxy:/etc/environment_proxy'
-    # get application configuration
-    BUILD_OPTS+=$(echo $RESPONSE | get-app-values)
-    BUILD_OPTS+=" -e SOURCE_VERSION=$GIT_SHA"
-    # run in the background, we'll attach to it to retrieve logs
-    BUILD_OPTS+=' -d'
-    BUILD_OPTS+=' -v '
-    BUILD_OPTS+=$(echo $TMP_DIR)
-    BUILD_OPTS+=':/tmp/app'
-    BUILD_OPTS+=' -v '
-    BUILD_OPTS+=$(echo $CACHE_DIR)
-    BUILD_OPTS+=':/tmp/cache:rw'
-    # give slug group ownership of TMP_DIR and CACHE_DIR.
-    chown -R :2000 $TMP_DIR
-    chown :2000 $CACHE_DIR
-    # TMP_DIR is created using mktemp, which sets permissions to 700. Since
-    # we share this with the slug group, the slug group needs to be able to
-    # work with it.
-    chmod g+rwx $TMP_DIR $CACHE_DIR
+    echo $APP_NAME
+    STACK=$(echo $APP_NAME|awk -F- '{print $1}')
+    SOLUTION=$(echo $APP_NAME|awk -F- '{print $2}')
+    build_image="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK}-${SOLUTION}-build"
+    echo $build_image
+    puts-step "Building Docker image"
+    docker pull $build_image
+    if [ $? -ne 0 ]
+    then
+        puts-warn "can not find image"
+        exit 1
+    fi
 
-    BUILD_OPTS+=' deis/slugbuilder'
+    docker_host=$(ip addr show docker0|grep -Eo "inet ([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*)/.*"|awk '{print $2}'|awk -F'/' '{print $1}')
+    build_container=$(docker run -d -v /var/run/docker.sock:/var/run/docker.sock --privileged -v `pwd`:/tmp/repo -e APP_NAME=$APP_NAME -e STACK=$STACK -e SOLUTION=$SOLUTION -e HOST=$docker_host -e IMAGE=$TMP_IMAGE $build_image)
+    docker attach $build_container
+    if [ $? -ne 0 ]
+    then
+        puts-warn "run the build image error"
+        docker rm -f $build_container
+        exit 1
+    fi
 
-    # build the application and attach to the process
-    JOB=$(eval $(parse-string "${BUILD_OPTS[@]}") )
-    docker attach $JOB
-
-    # copy out the compiled slug
-    docker cp $JOB:/tmp/slug.tgz $TMP_DIR
-    echo "FROM deis/slugrunner" > ./Dockerfile
+else
+    # force newline
+    echo "" >> Dockerfile
+    # inject builder-specific environment variables into the application environment
+    echo "ENV GIT_SHA $GIT_SHA" >> Dockerfile
+    docker build -t $TMP_IMAGE . 2>&1
 fi
 
-# force newline
-echo "" >> Dockerfile
-# inject builder-specific environment variables into the application environment
-echo "ENV GIT_SHA $GIT_SHA" >> Dockerfile
-
 echo
-puts-step "Building Docker image"
-docker build -t $TMP_IMAGE . 2>&1
 puts-step "Pushing image to private registry"
 docker push $TMP_IMAGE  &>/dev/null
 echo
 
 # use Procfile if provided, otherwise try default process types from ./release
+
+puts-step "success pushing... "
 if [ -f Procfile ]; then
     PROCFILE=$(cat Procfile | yaml2json-procfile)
 elif [ -f $TMP_DIR/slug.tgz ]; then
@@ -151,7 +144,7 @@ fi
 
 puts-step "Launching... "
 URL="{{ getv "/deis/controller/protocol" }}://{{ getv "/deis/controller/host" }}:{{ getv "/deis/controller/port" }}/v1/hooks/build"
-DATA=$(generate-buildhook "$SHORT_SHA" "$USER" "$APP_NAME" "$APP_NAME" "$PROCFILE" "$USING_DOCKERFILE")
+DATA=$(generate-buildhook "$SHORT_SHA" "$USER" "$APP_NAME" "$APP_NAME" "$PROCFILE" "true")
 PUBLISH_RELEASE=$(echo "$DATA" | publish-release-controller -url=$URL -key={{ getv "/deis/controller/builderKey" }})
 
 CODE=$?
@@ -175,4 +168,8 @@ cd $REPO_DIR
 git gc &>/dev/null
 if [ -n "$JOB" ]; then
   docker rm -f $JOB &>/dev/null
+fi
+
+if [ -n "$build_container" ]; then
+    docker rm -f $build_container
 fi
