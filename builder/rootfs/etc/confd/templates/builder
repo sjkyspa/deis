@@ -92,6 +92,7 @@ if [ ! -f Dockerfile ]; then
     STACK=$(echo $APP_NAME|awk -F- '{print $1}')
     SOLUTION=$(echo $APP_NAME|awk -F- '{print $2}')
     build_image="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK}-${SOLUTION}-build"
+    verify_image="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK}-${SOLUTION}-verify"
     echo $build_image
     puts-step "Building Docker image"
     docker pull $build_image
@@ -110,6 +111,17 @@ if [ ! -f Dockerfile ]; then
         docker rm -f $build_container
         exit 1
     fi
+
+    puts-step "Staring Verify ..."
+    verify_container=$(docker run -d -v /var/run/docker.sock:/var/run/docker.sock --privileged -v `pwd`:/tmp/repo -e APP_NAME=$APP_NAME -e STACK=$STACK -e SOLUTION=$SOLUTION -e HOST=$docker_host  $verify_image)
+    docker attach $verify_container
+    if [ $? -ne 0 ]
+    then
+        puts-warn "verify the $APP_NAME failed"
+        docker rm -f $verify_container
+        exit 1
+    fi
+    puts-step "Verify $APP_NAME succeed"
 
 else
     # force newline
@@ -172,4 +184,8 @@ fi
 
 if [ -n "$build_container" ]; then
     docker rm -f $build_container
+fi
+
+if [ -n "$verify_container" ]; then
+    docker rm -f $verify_container
 fi
