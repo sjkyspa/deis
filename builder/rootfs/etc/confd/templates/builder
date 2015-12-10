@@ -88,20 +88,19 @@ fi
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
-    echo $APP_NAME
     STACK=$(echo $APP_NAME|awk -F- '{print $1}')
     SOLUTION=$(echo $APP_NAME|awk -F- '{print $2}')
     build_image="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK}-${SOLUTION}-build"
     verify_image="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK}-${SOLUTION}-verify"
-    echo $build_image
-    puts-step "Building Docker image"
-    docker pull $build_image
+
+    echo
+    puts-step "Starting Building ..."
+    docker pull $build_image > /dev/null 2>&1
     if [ $? -ne 0 ]
     then
-        puts-warn "can not find image"
+        puts-warn "can not find build image by name $build_image"
         exit 1
     fi
-
     docker_host=$(ip addr show docker0|grep -Eo "inet ([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*)/.*"|awk '{print $2}'|awk -F'/' '{print $1}')
     build_container=$(docker run -d -v /var/run/docker.sock:/var/run/docker.sock --privileged -v `pwd`:/tmp/repo -e APP_NAME=$APP_NAME -e STACK=$STACK -e SOLUTION=$SOLUTION -e HOST=$docker_host -e IMAGE=$TMP_IMAGE $build_image)
     docker attach $build_container
@@ -111,8 +110,18 @@ if [ ! -f Dockerfile ]; then
         docker rm -f $build_container
         exit 1
     fi
+    puts-step "Build $APP_NAME success"
+    echo
 
-    puts-step "Staring Verify ..."
+
+    echo
+    puts-step "Staring Verify $APP_NAME ..."
+    docker pull $verify_image > /dev/null 2>&1
+    if [ $? -ne 0 ]
+    then
+        puts-warn "can not find verify image by name $verify_image"
+        exit 1
+    fi
     verify_container=$(docker run -d -v /var/run/docker.sock:/var/run/docker.sock --privileged -v `pwd`:/tmp/repo -e APP_NAME=$APP_NAME -e STACK=$STACK -e SOLUTION=$SOLUTION -e HOST=$docker_host  $verify_image)
     docker attach $verify_container
     if [ $? -ne 0 ]
@@ -121,8 +130,8 @@ if [ ! -f Dockerfile ]; then
         docker rm -f $verify_container
         exit 1
     fi
-    puts-step "Verify $APP_NAME succeed"
-
+    puts-step "Verify $APP_NAME success"
+    echo
 else
     # force newline
     echo "" >> Dockerfile
