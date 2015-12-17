@@ -5,6 +5,8 @@
 #
 set -eo pipefail
 
+trap on_exit HUP INT TERM QUIT ABRT EXIT
+
 puts_red_f() {
   while read data; do
     echo $'\033[0;31m'"      $data" $'\033[0m'
@@ -122,7 +124,7 @@ if [ ! -f Dockerfile ]; then
         --privileged \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v `pwd`:/codebase \
-        -v $REPO_DIR:/gitbare:r \
+        -v $REPO_DIR:/gitbare:ro \
         -v $CACHE_DIR:/build_cache \
         -e APP_NAME=$APP_NAME \
         -e STACK=$STACK_NAME \
@@ -139,7 +141,7 @@ if [ ! -f Dockerfile ]; then
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v `pwd`:/codebase \
         -v $CACHE_DIR:/build_cache \
-        -v $REPO_DIR:/gitbare:r \
+        -v $REPO_DIR:/gitbare:ro \
         -e APP_NAME=$APP_NAME \
         -e STACK=$STACK_NAME \
         -e HOST=$HOST  $VERIFY_IMAGE
