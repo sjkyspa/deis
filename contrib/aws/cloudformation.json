@@ -1,6 +1,10 @@
 [
     {
-        "ParameterKey":     "KeyPair",
-        "ParameterValue":   "deis"
+        "ParameterKey": "KeyPair",
+        "ParameterValue": "newdeis"
+    },
+    {
+        "ParameterKey": "InstanceType",
+        "ParameterValue": "m3.large"
     }
 ]
