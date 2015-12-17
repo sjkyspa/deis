@@ -5,6 +5,29 @@
 #
 set -eo pipefail
 
+puts_red_f() {
+  while read data; do
+    echo $'\033[0;31m'"      $data" $'\033[0m'
+  done
+}
+
+puts_green() {
+  echo $'\033[0;32m'"      $@" $'\033[0m'
+}
+
+on_exit() {
+    last_status=$?
+    if [ "$last_status" != "0" ]; then
+        if [ -f "process.log" ]; then
+          cat process.log|puts_red_f
+        fi
+        exit 1;
+    else
+        puts_green "Success"
+        exit 0;
+    fi
+}
+
 ARGS=3
 
 indent() {
@@ -88,48 +111,34 @@ fi
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
-    STACK=$(echo $APP_NAME|awk -F- '{print $1}')
-    SOLUTION=$(echo $APP_NAME|awk -F- '{print $2}')
-    build_image="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK}-${SOLUTION}-build"
-    verify_image="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK}-${SOLUTION}-verify"
+    STACK_NAME=$(echo $APP_NAME|awk -F- '{print $1}')
+    BUILD_IMAGE="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK_NAME}-build"
+    VERIFY_IMAGE="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK_NAME}-verify"
 
     echo
     puts-step "Starting Building ..."
-    docker pull $build_image > /dev/null 2>&1
-    if [ $? -ne 0 ]
-    then
-        puts-warn "can not find build image by name $build_image"
-        exit 1
-    fi
-    docker_host=$(ip addr show docker0|grep -Eo "inet ([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*)/.*"|awk '{print $2}'|awk -F'/' '{print $1}')
-    build_container=$(docker run -d -v /var/run/docker.sock:/var/run/docker.sock --privileged -v `pwd`:/tmp/repo -e APP_NAME=$APP_NAME -e STACK=$STACK -e SOLUTION=$SOLUTION -e HOST=$docker_host -e IMAGE=$TMP_IMAGE $build_image)
-    docker attach $build_container
-    if [ $? -ne 0 ]
-    then
-        puts-warn "run the build image error"
-        docker rm -f $build_container
-        exit 1
-    fi
+    docker pull $BUILD_IMAGE &>process.log
+    docker run --rm \
+        --privileged \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v `pwd`:/tmp/repo \
+        -e APP_NAME=$APP_NAME \
+        -e STACK=$STACK_NAME \
+        -e HOST=$HOST \
+        -e IMAGE=$TMP_IMAGE $BUILD_IMAGE
     puts-step "Build $APP_NAME success"
     echo
 
-
     echo
     puts-step "Staring Verify $APP_NAME ..."
-    docker pull $verify_image > /dev/null 2>&1
-    if [ $? -ne 0 ]
-    then
-        puts-warn "can not find verify image by name $verify_image"
-        exit 1
-    fi
-    verify_container=$(docker run -d -v /var/run/docker.sock:/var/run/docker.sock --privileged -v `pwd`:/tmp/repo -e APP_NAME=$APP_NAME -e STACK=$STACK -e SOLUTION=$SOLUTION -e HOST=$docker_host  $verify_image)
-    docker attach $verify_container
-    if [ $? -ne 0 ]
-    then
-        puts-warn "verify the $APP_NAME failed"
-        docker rm -f $verify_container
-        exit 1
-    fi
+    docker pull $VERIFY_IMAGE &>process.log
+    docker run --rm \
+        --privileged \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v `pwd`:/tmp/repo \
+        -e APP_NAME=$APP_NAME \
+        -e STACK=$STACK_NAME \
+        -e HOST=$HOST  $VERIFY_IMAGE
     puts-step "Verify $APP_NAME success"
     echo
 else
@@ -142,12 +151,11 @@ fi
 
 echo
 puts-step "Pushing image to private registry"
-docker push $TMP_IMAGE  &>/dev/null
+docker push $TMP_IMAGE  &>process.log
+puts-step "Push image success... "
 echo
 
 # use Procfile if provided, otherwise try default process types from ./release
-
-puts-step "success pushing... "
 if [ -f Procfile ]; then
     PROCFILE=$(cat Procfile | yaml2json-procfile)
 elif [ -f $TMP_DIR/slug.tgz ]; then
@@ -189,12 +197,4 @@ cd $REPO_DIR
 git gc &>/dev/null
 if [ -n "$JOB" ]; then
   docker rm -f $JOB &>/dev/null
-fi
-
-if [ -n "$build_container" ]; then
-    docker rm -f $build_container
-fi
-
-if [ -n "$verify_container" ]; then
-    docker rm -f $verify_container
 fi
