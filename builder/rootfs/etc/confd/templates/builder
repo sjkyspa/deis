@@ -121,7 +121,9 @@ if [ ! -f Dockerfile ]; then
     docker run --rm \
         --privileged \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v `pwd`:/tmp/repo \
+        -v `pwd`:/codebase \
+        -v $REPO_DIR:/gitbare:r \
+        -v $CACHE_DIR:/build_cache \
         -e APP_NAME=$APP_NAME \
         -e STACK=$STACK_NAME \
         -e HOST=$HOST \
@@ -135,7 +137,9 @@ if [ ! -f Dockerfile ]; then
     docker run --rm \
         --privileged \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v `pwd`:/tmp/repo \
+        -v `pwd`:/codebase \
+        -v $CACHE_DIR:/build_cache \
+        -v $REPO_DIR:/gitbare:r \
         -e APP_NAME=$APP_NAME \
         -e STACK=$STACK_NAME \
         -e HOST=$HOST  $VERIFY_IMAGE
