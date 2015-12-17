@@ -1,4 +1,6 @@
+/deis.iml
 /.idea
+*.DS_Store
 *.py[cod]
 
 # Packages
