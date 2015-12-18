@@ -7,9 +7,7 @@ import (
 	"net"
 	"golang.org/x/crypto/ssh/agent"
 	"io"
-	"github.com/cde/client/util"
-	"strings"
-	"regexp"
+	"github.com/deis/deis/client/controller/client"
 )
 
 func StackCreate(stackName string) error {
@@ -19,19 +17,12 @@ func StackCreate(stackName string) error {
 			SSHAgent(),
 		},
 	}
-
-	docker := util.Filter(os.Environ(), func(item string) bool {
-		return strings.HasPrefix(item, "DOCKER_HOST")
-	})
-
-	var dockerHost string = "192.168.99.101";
-	if (len(docker) != 0) {
-		r := regexp.MustCompile(`tcp://([\d.]{7,17}):\d*`)
-		dockerHost = string(r.FindStringSubmatch(docker[0])[1])
-		fmt.Println(dockerHost)
+	c, err := client.New();
+	if err != nil {
+		return  fmt.Errorf("Fail to get client config: %s, you need to set env DOCKER_HOST first", err)
 	}
 
-	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", dockerHost, 2222), sshConfig)
+	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", c.ControllerURL.Host , 2222), sshConfig)
 	if err != nil {
 		return  fmt.Errorf("Failed to dial: %s, you need to set env DOCKER_HOST first", err)
 	}
@@ -51,9 +42,7 @@ func StackCreate(stackName string) error {
 	if err != nil {
 		return fmt.Errorf("Unable to setup stdout for session: %v", err)
 	}
-	go (func() {
-		io.Copy(os.Stdout, stdout)
-	})()
+	go io.Copy(os.Stdout, stdout)
 
 	stderr, err := session.StderrPipe()
 	if err != nil {
