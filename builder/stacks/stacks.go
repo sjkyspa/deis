@@ -150,11 +150,13 @@ func initRepo(repoPath, gitHome string, c cookoo.Context) (bool, error) {
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.Warnf(c, "git init output: %s", out)
 		return false, err
+	} else {
+		log.Infof(c, "init output %s", out)
 	}
 
 	cm := exec.Command(fmt.Sprintf("ls", "-l" , repoPath))
 	o, _ := cm.CombinedOutput()
-	log.Warnf(c, "conteint %s", o)
+	log.Infof(c, "content %s", o)
 
 	return true, nil
 }
