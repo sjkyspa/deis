@@ -107,7 +107,7 @@ func initStack(c cookoo.Context, repoPath, gitHome, repoName, stack string) (boo
 		return false, err
 	}
 
-	util.CopyUnderFolder("/home/git/stacks/" + stack + "/template", tmpdir + "/" + repoName)
+	util.CopyUnderFolder("/stacks/" + stack + "/template", tmpdir + "/" + repoName)
 
 	if err := ioutil.WriteFile(filepath.Join(tmpdir + "/" + repoName, "manifest.yml"), []byte(fmt.Sprintf("name: %s", stack)), 0644); err != nil {
 		return false, err
