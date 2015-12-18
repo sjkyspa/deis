@@ -10,7 +10,7 @@ import (
 	"github.com/deis/deis/client/controller/client"
 )
 
-func StackCreate(stackName string) error {
+func StackCreate(appId, stackName string) error {
 	sshConfig := &ssh.ClientConfig{
 		User: "git",
 		Auth: []ssh.AuthMethod{
@@ -50,7 +50,7 @@ func StackCreate(stackName string) error {
 	}
 	go io.Copy(os.Stderr, stderr)
 
-	err = session.Run(fmt.Sprintf("stack-init %s", stackName))
+	err = session.Run(fmt.Sprintf("stack-init %s %s", appId, stackName))
 	return nil
 }
 

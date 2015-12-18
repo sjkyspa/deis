@@ -254,7 +254,15 @@ func (s *server) answer(channel ssh.Channel, requests <-chan *ssh.Request, sshCo
 				cxt.Put("channel", channel)
 				cxt.Put("request", req)
 				cxt.Put("operation", parts[0])
-				cxt.Put("stack", parts[1])
+
+				args := strings.Split(parts[1], " ")
+				if len(args) != 2 {
+					log.Warn(s.c, "Expected <app> <stack> provided.")
+					req.Reply(ok, nil)
+					break
+				}
+				cxt.Put("app", args[0])
+				cxt.Put("stack", args[1])
 				stackInit := cxt.Get("route.sshd.stackInit", "stackInit").(string)
 				err := router.HandleRequest(stackInit, cxt, true)
 				var xs uint32

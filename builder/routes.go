@@ -334,6 +334,7 @@ func routes(reg *cookoo.Registry) {
 					{Name: "permissions", From: "cxt:authN"},
 					{Name: "user", From: "cxt:username"},
 					{Name: "stack", From: "cxt:stack"},
+					{Name: "app", From: "cxt:app"},
 				},
 			},
 		},
