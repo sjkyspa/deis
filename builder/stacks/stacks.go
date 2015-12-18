@@ -76,13 +76,10 @@ func Init(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Interrupt) {
 		log.Warnf(c, "Can not generate repo name", err)
 		return nil, err
 	}
-
 	repoName := p.Get("repoName", strings.Join(fake.Words(3, true), "_")).(string)
 	stack := p.Get("stack", "").(string)
 	channel := p.Get("channel", nil).(ssh.Channel)
 	gitHome := p.Get("gitHome", "/home/git").(string)
-
-
 
 	repo, err := cleanRepoName(repoName)
 	if err != nil {
@@ -154,6 +151,10 @@ func initRepo(repoPath, gitHome string, c cookoo.Context) (bool, error) {
 		log.Warnf(c, "git init output: %s", out)
 		return false, err
 	}
+
+	cm := exec.Command(fmt.Sprintf("ls", "-l" , repoPath))
+	o, _ := cm.CombinedOutput()
+	log.Warnf(c, "conteint %s", o)
 
 	return true, nil
 }
@@ -291,6 +292,7 @@ func initStack(c cookoo.Context, repoPath, gitHome, repoName, stack string) (boo
 		return false, err
 	}
 
+	log.Infof(c, "commit repo %s", repoPath)
 	gitCommitCmd := exec.Command("git", "commit", "-m", "init stack")
 	gitCommitCmd.Dir = tmpdir + "/" + repoName
 	if out, err := gitCommitCmd.CombinedOutput(); err != nil {
@@ -298,11 +300,14 @@ func initStack(c cookoo.Context, repoPath, gitHome, repoName, stack string) (boo
 		return false, err
 	}
 
+	log.Infof(c, "push repo %s", repoPath)
 	gitPushCmd := exec.Command("git", "push")
 	gitPushCmd.Dir = tmpdir + "/" + repoName
 	if out, err := gitPushCmd.CombinedOutput(); err != nil {
 		log.Warnf(c, "git push output: %s", out)
 		return false, err
+	} else {
+		log.Infof(c, "push out % s", out)
 	}
 
 	return true, nil
