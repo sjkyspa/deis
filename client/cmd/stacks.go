@@ -19,12 +19,12 @@ func StackCreate(stackName string) error {
 	}
 	c, err := client.New();
 	if err != nil {
-		return  fmt.Errorf("Fail to get client config: %s, you need to set env DOCKER_HOST first", err)
+		return  fmt.Errorf("Fail to get client config: %s", err)
 	}
 
 	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", c.ControllerURL.Host , 2222), sshConfig)
 	if err != nil {
-		return  fmt.Errorf("Failed to dial: %s, you need to set env DOCKER_HOST first", err)
+		return  fmt.Errorf("Failed to dial: %s", err)
 	}
 
 	session, err := connection.NewSession()
