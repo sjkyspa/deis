@@ -244,6 +244,26 @@ func (s *server) answer(channel ssh.Channel, requests <-chan *ssh.Request, sshCo
 				}
 				sendExitStatus(xs, channel)
 				return nil
+			case "stack-init":
+				if len(parts) < 2 {
+					log.Warn(s.c, "Expected two-part command.\n")
+					req.Reply(ok, nil)
+					break
+				}
+				req.Reply(true, nil) // We processed. Yay.
+				cxt.Put("channel", channel)
+				cxt.Put("request", req)
+				cxt.Put("operation", parts[0])
+				cxt.Put("stack", parts[1])
+				stackInit := cxt.Get("route.sshd.stackInit", "stackInit").(string)
+				err := router.HandleRequest(stackInit, cxt, true)
+				var xs uint32
+				if err != nil {
+					log.Errf(s.c, "Failed stack init: %v", err)
+					xs = 1
+				}
+				sendExitStatus(xs, channel)
+				return nil
 			default:
 				log.Warnf(s.c, "Illegal command is '%s'\n", clean)
 				req.Reply(false, nil)

@@ -20,6 +20,11 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+
+const (
+	UserInitConfig string = "git.UserConfig"
+)
+
 // PrereceiveHookTmpl is a pre-receive hook.
 //
 // This is overridable. The following template variables are passed into it:
@@ -238,4 +243,29 @@ func prereceiveHook(vars map[string]string) ([]byte, error) {
 
 	err = t.Execute(&out, vars)
 	return out.Bytes(), err
+}
+
+type GitUser struct {
+	name  string
+	email string
+}
+
+func UserInit(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Interrupt) {
+	email := exec.Command("git", "config", "--global", "user.email", "tw@thoughtworks.com")
+	email.Dir = "/tmp"
+	if out, err := email.CombinedOutput(); err != nil {
+		log.Warnf(c, "git config email output: %s", out)
+		return &GitUser{}, err
+	}
+	username := exec.Command("git", "config", "--global", "user.name", "tw")
+	username.Dir = "/tmp"
+	if out, err := username.CombinedOutput(); err != nil {
+		log.Warnf(c, "git config username output: %s", out)
+		return &GitUser{}, err
+	}
+
+	return &GitUser{
+		name: "tw",
+		email: "tw@thoughtworks.com",
+	}, nil
 }

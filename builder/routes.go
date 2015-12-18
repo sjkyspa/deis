@@ -11,6 +11,7 @@ import (
 	"github.com/deis/deis/builder/etcd"
 	"github.com/deis/deis/builder/git"
 	"github.com/deis/deis/builder/sshd"
+	"github.com/deis/deis/builder/stacks"
 )
 
 // routes builds the Cookoo registry.
@@ -141,6 +142,11 @@ func routes(reg *cookoo.Registry) {
 			cookoo.Cmd{
 				Name: sshd.ServerConfig,
 				Fn:   sshd.Configure,
+			},
+
+			cookoo.Cmd{
+				Name: git.UserInitConfig,
+				Fn:   git.UserInit,
 			},
 
 			// CONFD: Build out the templates, then start the Confd server.
@@ -303,6 +309,31 @@ func routes(reg *cookoo.Registry) {
 					{Name: "fingerprint", From: "cxt:fingerprint"},
 					{Name: "permissions", From: "cxt:authN"},
 					{Name: "user", From: "cxt:username"},
+				},
+			},
+		},
+	})
+
+	reg.AddRoute(cookoo.Route{
+		Name: "stackInit",
+		Help: "Handle stack init",
+		Does: []cookoo.Task{
+			// The Git receive handler needs the username. So we provide
+			// it by looking up the name based on the key. When the
+			// controller no longer requires username for SSH auth, we can
+			// ditch this.
+			cookoo.Cmd{
+				Name: "stackInit",
+				Fn:   stacks.Init,
+				Using: []cookoo.Param{
+					{Name: "request", From: "cxt:request"},
+					{Name: "channel", From: "cxt:channel"},
+					{Name: "operation", From: "cxt:operation"},
+					{Name: "repoName", From: "cxt:repository"},
+					{Name: "fingerprint", From: "cxt:fingerprint"},
+					{Name: "permissions", From: "cxt:authN"},
+					{Name: "user", From: "cxt:username"},
+					{Name: "stack", From: "cxt:stack"},
 				},
 			},
 		},

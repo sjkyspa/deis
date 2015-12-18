@@ -42,6 +42,7 @@ Subcommands, use 'deis help [subcommand]' to learn more::
   tags          manage tags for application containers
   releases      manage releases of an application
   certs         manage SSL endpoints for an app
+  stacks 		manage stack
 
   keys          manage ssh keys used for 'git push' deployments
   perms         manage permissions for applications
@@ -107,6 +108,8 @@ Use 'git push deis master' to deploy to an application.
 		err = parser.Git(argv)
 	case "users":
 		err = parser.Users(argv)
+	case "stacks":
+		err = parser.Stacks(argv)
 	case "help":
 		fmt.Print(usage)
 		return 0
