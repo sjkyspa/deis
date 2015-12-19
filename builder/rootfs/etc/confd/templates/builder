@@ -113,7 +113,7 @@ fi
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
-    STACK_NAME=$(echo $APP_NAME|awk -F- '{print $1}')
+    STACK_NAME=$(cat manifest.yml| sed -n '1s/name:[[:space:]]*//p')
     BUILD_IMAGE="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK_NAME}-build"
     VERIFY_IMAGE="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${STACK_NAME}-verify"
 
