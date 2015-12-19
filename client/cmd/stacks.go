@@ -8,16 +8,42 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 	"io"
 	"github.com/deis/deis/client/controller/client"
+	"github.com/deis/deis/client/controller/models/apps"
+	"github.com/deis/deis/client/controller/api"
 )
 
+var createNewApp = func(client *client.Client, appId string) (api.App, error) {
+
+
+	fmt.Print("Creating Application... ")
+	quit := progress()
+	app, err := apps.New(client, appId)
+
+	quit <- true
+	<-quit
+
+	if err != nil {
+		return api.App{}, err
+	}
+
+	fmt.Printf("done, created %s\n", app.ID)
+	return app, nil
+}
+
 func StackCreate(appId, stackName string) error {
+	c, err := client.New()
+	app, err := createNewApp(c, appId)
+	if err != nil {
+		return err
+	}
+
 	sshConfig := &ssh.ClientConfig{
 		User: "git",
 		Auth: []ssh.AuthMethod{
 			SSHAgent(),
 		},
 	}
-	c, err := client.New();
+
 	if err != nil {
 		return  fmt.Errorf("Fail to get client config: %s", err)
 	}
@@ -50,7 +76,7 @@ func StackCreate(appId, stackName string) error {
 	}
 	go io.Copy(os.Stderr, stderr)
 
-	err = session.Run(fmt.Sprintf("stack-init %s %s", appId, stackName))
+	err = session.Run(fmt.Sprintf("stack-init %s %s", app.ID, stackName))
 	return nil
 }
 

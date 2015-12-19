@@ -34,7 +34,8 @@ Options:
 	if err != nil {
 		return err
 	}
-	return cmd.StackCreate(safeGetValue(args, "--app"), safeGetValue(args, "--stack"))
+	create := cmd.StackCreate(safeGetValue(args, "--app"), safeGetValue(args, "--stack"))
+	return create
 }
 
 
