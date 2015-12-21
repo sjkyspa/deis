@@ -149,7 +149,7 @@ if [ ! -f Dockerfile ]; then
         -e STACK=$STACK_NAME \
         -e HOST=$HOST \
         -e IMAGE=$TMP_IMAGE \
-        -e VERIFY_IMAGE=$TMP_VERIFY_IMAGE
+        -e VERIFY_IMAGE=$TMP_VERIFY_IMAGE \
          $VERIFY_IMAGE
     puts-step "Verify $APP_NAME success"
     echo
