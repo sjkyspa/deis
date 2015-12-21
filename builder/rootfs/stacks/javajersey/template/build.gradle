@@ -43,6 +43,15 @@ ext {
     jerseyVersion = "2.22.1"
 }
 
+sourceSets {
+    itest
+    test {
+        resources {
+            srcDir 'src/itest/resources'
+        }
+    }
+}
+
 dependencies {
     compile "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
     compile "org.glassfish.jersey.containers:jersey-container-grizzly2-http:$jerseyVersion"
@@ -91,32 +100,22 @@ configurations {
     itestRuntime.extendsFrom testRuntime
 }
 
-sourceSets {
-    itest {
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
+task itestJar(type: Jar, dependsOn: jar) {
+    baseName = "verify"
+    classifier = "standalone"
+    version = ""
 
-        // You can add other directories to the classpath like this:
-        //runtimeClasspath += files('src/itest/resources/com/buransky')
+    from files(sourceSets.itest.output.classesDir)
+    from files(sourceSets.itest.output.resourcesDir)
 
-        java.srcDir file('src/itest/java')
-    }
+    from configurations.itestCompile.asFileTree.files.collect { zipTree(it) }
 
-    // This is just to trick IntelliJ IDEA to add integration test
-    // resources to classpath when running integration tests from
-    // the IDE. It's is not a good solution but I don't know about
-    // a better one.
-    test {
-        resources.srcDir file('src/itest/resources')
-    }
-}
-
-task itest(type: Test) {
-    testClassesDir = sourceSets.itest.output.classesDir
-    classpath = sourceSets.itest.runtimeClasspath
-
-    // This is not needed, but I like to see which tests have run
-    testLogging {
-        events "passed", "skipped", "failed"
+    exclude("META-INF/*.SF")
+    exclude("META-INF/*.DSA")
+    exclude("META-INF/*.RSA")
+    exclude("META-INF/*.RSA")
+    exclude("META-INF/*.RSA")
+    manifest {
+        attributes 'Main-Class': 'specs.Main'
     }
 }
