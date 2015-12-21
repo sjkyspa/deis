@@ -82,6 +82,7 @@ CACHE_DIR="${REPO_DIR}/cache"
 # define image names
 IMAGE_NAME="$APP_NAME:git-$SHORT_SHA"
 TMP_IMAGE="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/$IMAGE_NAME"
+TMP_VERIFY_IMAGE="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/${APP_NAME}-verify:git-${SHORT_SHA}"
 
 # create app directories
 mkdir -p $BUILD_DIR $CACHE_DIR
@@ -129,7 +130,9 @@ if [ ! -f Dockerfile ]; then
         -e APP_NAME=$APP_NAME \
         -e STACK=$STACK_NAME \
         -e HOST=$HOST \
-        -e IMAGE=$TMP_IMAGE $BUILD_IMAGE
+        -e VERIFY_IMAGE=$TMP_VERIFY_IMAGE \
+        -e IMAGE=$TMP_IMAGE \
+        $BUILD_IMAGE
     puts-step "Build $APP_NAME success"
     echo
 
@@ -144,7 +147,10 @@ if [ ! -f Dockerfile ]; then
         -v $REPO_DIR:/gitbare:ro \
         -e APP_NAME=$APP_NAME \
         -e STACK=$STACK_NAME \
-        -e HOST=$HOST  $VERIFY_IMAGE
+        -e HOST=$HOST \
+        -e IMAGE=$TMP_IMAGE \
+        -e VERIFY_IMAGE=$TMP_VERIFY_IMAGE
+         $VERIFY_IMAGE
     puts-step "Verify $APP_NAME success"
     echo
 else
