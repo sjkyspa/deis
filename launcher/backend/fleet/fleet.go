@@ -4,15 +4,21 @@ import (
 	"github.com/coreos/fleet/client"
 	"sync"
 	"io"
-"github.com/deis/deis/launcher/config"
+	"net/url"
+	"net/http"
 )
 type FleetClient struct {
-	Fleet         client.API
-	config config.Backend
+	fleet         client.API
 }
 
-func NewClient() {
-
+func NewClient(ep url.URL) (*FleetClient, error){
+	client, err := client.NewHTTPClient(http.DefaultClient, ep)
+	if err != nil {
+		return nil, err
+	}
+	return &FleetClient{
+		fleet: client,
+	}, nil
 }
 
 func (*FleetClient)Destroy([]string, *sync.WaitGroup, io.Writer, io.Writer) {

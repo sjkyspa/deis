@@ -2,6 +2,7 @@ package config
 import (
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/deis/deis/launcher/config/model"
+	"net/url"
 )
 
 type EtcdBackend struct {
@@ -92,7 +93,7 @@ func traverseNode(node *etcd.Node) []*model.ConfigNode {
 	return serviceKeys
 }
 
-func NewEtcdBackend(entrypoint string) (*EtcdBackend, error) {
-	return &EtcdBackend{client: etcd.NewClient([]string{entrypoint})}, nil
+func NewEtcdBackend(ep url.URL) (*EtcdBackend, error) {
+	return &EtcdBackend{client: etcd.NewClient([]string{ep.String()})}, nil
 }
 

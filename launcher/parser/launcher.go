@@ -5,6 +5,7 @@ import (
 	"github.com/docopt/docopt-go"
 	"github.com/cde/version"
 	"github.com/deis/deis/launcher/cmd"
+	"net/url"
 )
 
 
@@ -23,8 +24,17 @@ Usage:
 	if err != nil {
 		return err
 	}
-
-	return cmd.Start(args["<file>"].(string), args["<config-url>"].(string), args["<backend>"].(string))
+	configUrl, err := url.Parse(args["<config-url>"].(string))
+	if err != nil || configUrl.Scheme == "" {
+		fmt.Fprintf(os.Stderr, "config url: %s is not valid", args["<config-url>"].(string))
+		return err
+	}
+	backendUrl, err := url.Parse(args["<backend>"].(string))
+	if err != nil || backendUrl.Scheme == "" {
+		fmt.Fprintf(os.Stderr, "backend url: %s is not valid", args["<backend>"].(string))
+		return err
+	}
+	return cmd.Start(args["<file>"].(string), configUrl, backendUrl)
 }
 
 func Stop(argv []string) error {

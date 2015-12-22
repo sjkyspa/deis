@@ -3,7 +3,6 @@ import (
 	"os"
 	"github.com/docopt/docopt-go"
 	"github.com/deis/deis/version"
-//	"github.com/deis/deis/launcher/parser"
 	"fmt"
 	"github.com/deis/deis/launcher/parser"
 )
