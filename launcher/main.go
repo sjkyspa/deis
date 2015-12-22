@@ -33,9 +33,9 @@ stop 		a stack
 
 	switch args["<command>"] {
 	case "start":
-		err = parser.Start(argv)
+		err = parser.Start(append([]string{args["<command>"].(string)}, (args["<args>"].([]string))...))
 	case "stop":
-		err = parser.Stop(argv)
+		err = parser.Stop(append([]string{args["<command>"].(string)}, (args["<args>"].([]string))...))
 	case "help":
 		parser.PrintUsage()
 	default:
@@ -43,7 +43,6 @@ stop 		a stack
 	}
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s", err)
 		return 1
 	}
 
