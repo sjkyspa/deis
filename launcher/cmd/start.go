@@ -8,8 +8,7 @@ import (
 	"github.com/deis/deis/launcher/backend/fleet"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-"github.com/deis/deis/launcher/model"
-	"sync"
+	"github.com/deis/deis/launcher/model"
 	"net/http"
 )
 
@@ -46,7 +45,8 @@ func Start(filename string, configURL *url.URL, backendURL *url.URL) error {
 	}
 
 	fmt.Println(m)
-	containers := make([]model.Container, 0);
+	var containers [] model.Container;
+	containers = make([]model.Container, 0);
 	for key, value := range m {
 		containers = append(containers, model.Container{
 			Name: key,
@@ -60,9 +60,7 @@ func Start(filename string, configURL *url.URL, backendURL *url.URL) error {
 
 	for _, item := range containers {
 		fmt.Println(item)
-		wg := &sync.WaitGroup{}
-		backend.Start(item, wg, os.Stdout, os.Stderr)
-		wg.Wait()
+		return backend.Start(item)
 	}
 
 	return nil

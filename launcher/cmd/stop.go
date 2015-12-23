@@ -1,5 +1,5 @@
 package cmd
 
-func Stop(stackId string) error {
+func Stop(stackID string) error {
 	return nil
 }

@@ -1,25 +1,23 @@
 package fleet
 
 import (
-	"sync"
 	"io"
 	"github.com/deis/deis/launcher/model"
 	"github.com/coreos/fleet/schema"
 	"fmt"
 	"github.com/deis/deis/pkg/prettyprint"
 	"time"
+	"os"
 )
 
-func (f *FleetClient) Start(container model.Container, wg *sync.WaitGroup, out, ew io.Writer) {
-	defer wg.Done()
+func (f *FleetClient) Start(container model.Container) error {
 	unit, err := f.createUnit(container)
 	if err != nil {
-		fmt.Fprintf(ew, "Error when create unit %s", container)
-		return
+		fmt.Fprintf(os.Stderr, "Error when create unit %s", container)
+		return err
 	}
 
 	f.Fleet.CreateUnit(unit)
-	wg.Add(1)
 	var name string = unit.Name
 
 	lastSubState := "dead"
@@ -27,16 +25,16 @@ func (f *FleetClient) Start(container model.Container, wg *sync.WaitGroup, out, 
 	desiredState := "running"
 	err = f.Fleet.SetUnitTargetState(unit.Name, requestState)
 	if err != nil {
-		io.WriteString(ew, err.Error())
-		return
+		io.WriteString(os.Stderr, err.Error())
+		return err
 	}
 
 	for {
 		// poll for unit states
 		states, err := f.Fleet.UnitStates()
 		if err != nil {
-			io.WriteString(ew, err.Error())
-			return
+			io.WriteString(os.Stderr, err.Error())
+			return err
 		}
 
 		// FIXME: fleet UnitStates API forces us to iterate for now
@@ -48,28 +46,27 @@ func (f *FleetClient) Start(container model.Container, wg *sync.WaitGroup, out, 
 			}
 		}
 		if currentState == nil {
-			fmt.Fprintf(ew, "Could not find unit: %v\n", name)
-			return
+			fmt.Fprintf(os.Stderr, "Could not find unit: %v\n", name)
+			return fmt.Errorf("Could not find unit: %v\n", name)
 		}
 
 		// if subState changed, send it across the output channel
 		if lastSubState != currentState.SystemdSubState {
 			l := prettyprint.Overwritef(prettyprint.Colorize("{{.Yellow}}%v:{{.Default}} %v/%v"), name, currentState.SystemdActiveState, currentState.SystemdSubState)
-			fmt.Fprintf(out, l)
+			fmt.Fprintf(os.Stdout, l)
 		}
 
 		// break when desired state is reached
 		if currentState.SystemdSubState == desiredState {
-			fmt.Fprintln(out)
-			return
+			fmt.Fprintln(os.Stdout)
+			return nil
 		}
 
 		lastSubState = currentState.SystemdSubState
 
 		if lastSubState == "failed" {
-			o := prettyprint.Colorize("{{.Red}}The service '%s' failed while starting.{{.Default}}\n")
-			fmt.Fprintf(ew, o, name)
-			return
+			return fmt.Errorf("The service '%s' failed while starting", name)
+
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
