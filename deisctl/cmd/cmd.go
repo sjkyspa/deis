@@ -157,10 +157,10 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 	var trash bytes.Buffer
 	batch := []string{
 		"database", "registry@*", "controller", "builder",
-		"publisher", "router@*", "registrator",
+		"publisher", "router@*", "registrator", "registrator-internal",
 	}
 	if stateless {
-		batch = []string{"registry@*", "controller", "builder", "publisher", "router@*", "registrator"}
+		batch = []string{"registry@*", "controller", "builder", "publisher", "router@*", "registrator", "registrator-internal"}
 	}
 	b.Start(batch, &bgwg, &trash, &trash)
 	// End background stuff.
@@ -182,6 +182,9 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 
 	fmt.Fprintln(out, "Registrator plane...")
 	b.Start([]string{"registrator"}, wg, out, err)
+	wg.Wait()
+
+	b.Start([]string{"registrator-internal"}, wg, out, err)
 	wg.Wait()
 
 	fmt.Fprintln(out, "Router mesh...")
@@ -228,6 +231,9 @@ func stopDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, 
 
 	fmt.Fprintln(out, "Registrator plane...")
 	b.Stop([]string{"registrator"}, wg, out, err)
+	wg.Wait()
+
+	b.Stop([]string{"registrator-internal"}, wg, out, err)
 	wg.Wait()
 
 	fmt.Fprintln(out, "Control plane...")
@@ -349,6 +355,9 @@ func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGrou
 	b.Create([]string{"registrator"}, wg, out, err)
 	wg.Wait()
 
+	b.Create([]string{"registrator-internal"}, wg, out, err)
+	wg.Wait()
+
 	fmt.Fprintln(out, "Router mesh...")
 	b.Create(getRouters(), wg, out, err)
 	wg.Wait()
@@ -402,6 +411,9 @@ func uninstallAllServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 
 	fmt.Fprintln(out, "Registrator plane...")
 	b.Destroy([]string{"registrator"}, wg, out, err)
+	wg.Wait()
+
+	b.Destroy([]string{"registrator-internal"}, wg, out, err)
 	wg.Wait()
 
 	fmt.Fprintln(out, "Control plane...")
