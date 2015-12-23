@@ -24,17 +24,17 @@ Usage:
 	if err != nil {
 		return err
 	}
-	configUrl, err := url.Parse(args["<config-url>"].(string))
-	if err != nil || configUrl.Scheme == "" {
+	configURL, err := url.Parse(args["<config-url>"].(string))
+	if err != nil || configURL.Scheme == "" {
 		fmt.Fprintf(os.Stderr, "config url: %s is not valid", args["<config-url>"].(string))
 		return err
 	}
-	backendUrl, err := url.Parse(args["<backend>"].(string))
-	if err != nil || backendUrl.Scheme == "" {
+	backendURL, err := url.Parse(args["<backend>"].(string))
+	if err != nil || backendURL.Scheme == "" {
 		fmt.Fprintf(os.Stderr, "backend url: %s is not valid", args["<backend>"].(string))
 		return err
 	}
-	return cmd.Start(args["<file>"].(string), configUrl, backendUrl)
+	return cmd.Start(args["<file>"].(string), configURL, backendURL)
 }
 
 func Stop(argv []string) error {

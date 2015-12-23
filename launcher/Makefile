@@ -4,7 +4,7 @@ include ../includes.mk
 repo_path = github.com/deis/deis/launcher
 
 GO_FILES = $(wildcard *.go)
-GO_PACKAGES = parser cmd backend discovery backend
+GO_PACKAGES = parser cmd backend config model
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENT = $(notdir $(repo_path))
@@ -43,7 +43,7 @@ test: test-style test-unit
 test-style:
 # display output, then check
 	$(GOFMT) $(GO_PACKAGES) $(GO_FILES)
-	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
+	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES)
 	$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
 	$(GOLINT) ./...
 

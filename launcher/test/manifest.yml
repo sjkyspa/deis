@@ -1,0 +1,10 @@
+lb:
+  image: 'hub.deepi.cn/haproxy:latest'
+  links:
+    - 'web-green'
+  ports:
+    - '80:80'
+web-blue:
+  image: 'mysql'
+web-green:
+  image: 'mysql'
