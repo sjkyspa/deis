@@ -90,6 +90,11 @@ func doUpgradeTakeOver(stateless bool, b backend.Backend, cb config.Backend) err
 	b.Destroy([]string{"publisher"}, &wg, Stdout, Stderr)
 	wg.Wait()
 
+	b.Stop([]string{"registrator"}, &wg, Stdout, Stderr)
+	wg.Wait()
+	b.Destroy([]string{"registrator"}, &wg, Stdout, Stderr)
+	wg.Wait()
+
 	if err := republishServices(1800, nodes, cb); err != nil {
 		return err
 	}
@@ -99,6 +104,11 @@ func doUpgradeTakeOver(stateless bool, b backend.Backend, cb config.Backend) err
 	b.Create([]string{"publisher"}, &wg, Stdout, Stderr)
 	wg.Wait()
 	b.Start([]string{"publisher"}, &wg, Stdout, Stderr)
+	wg.Wait()
+
+	b.Create([]string{"registrator"}, &wg, Stdout, Stderr)
+	wg.Wait()
+	b.Start([]string{"registrator"}, &wg, Stdout, Stderr)
 	wg.Wait()
 
 	installUpgradeServices(b, stateless, &wg, Stdout, Stderr)
@@ -134,6 +144,10 @@ func installUpgradeServices(b backend.Backend, stateless bool, wg *sync.WaitGrou
 
 	fmt.Fprintln(out, "Data plane...")
 	b.Create([]string{"publisher"}, wg, out, err)
+	wg.Wait()
+
+	fmt.Fprintln(out, "Registrator plane...")
+	b.Create([]string{"registrator"}, wg, out, err)
 	wg.Wait()
 }
 
@@ -171,10 +185,10 @@ func startUpgradeServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 	var trash bytes.Buffer
 	batch := []string{
 		"database", "registry@*", "controller", "builder",
-		"publisher",
+		"publisher", "registrator",
 	}
 	if stateless {
-		batch = []string{"registry@*", "controller", "builder", "publisher", "router@*"}
+		batch = []string{"registry@*", "controller", "builder", "publisher", "router@*", "registrator"}
 	}
 	b.Start(batch, &bgwg, &trash, &trash)
 
@@ -191,5 +205,9 @@ func startUpgradeServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 
 	fmt.Fprintln(out, "Data plane...")
 	b.Start([]string{"publisher"}, wg, out, err)
+	wg.Wait()
+
+	fmt.Fprintln(out, "Registrator plane...")
+	b.Start([]string{"registrator"}, wg, out, err)
 	wg.Wait()
 }

@@ -1,0 +1,19 @@
+[Unit]
+Description=deis-registrator
+Wants=etcd2.service
+After=docker.socket etcd2.service etcd.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "docker inspect deis-registrator >/dev/null 2>&1 && docker rm -f deis-registrator || true"
+ExecStart=/bin/sh -c "IMAGE=gliderlabs/registrator && docker run --name deis-registrator --net=host --volume=/var/run/docker.sock:/tmp/docker.sock $IMAGE -ip $COREOS_PRIVATE_IPV4 etcd://$COREOS_PRIVATE_IPV4:4001/services"
+ExecStop=-/usr/bin/docker stop deis-registrator
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true
