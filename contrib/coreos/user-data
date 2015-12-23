@@ -35,17 +35,12 @@ coreos:
     - name: fleet.socket
       command: start
       enable: true
-      content: |
-        [Unit]
-        Description=Fleet Socket for the API
-
-        [Socket]
-        ListenStream=49153
-        Service=fleet.service
-        BindIPv6Only=both
-
-        [Install]
-        WantedBy=sockets.target
+      drop-ins:
+      - name: 30-ListenStream.conf
+        content: |
+          [Socket]
+          ListenStream=$public_ipv4:49153
+          Service=fleet.service
     - name: docker-tcp.socket
       command: start
       enable: true
