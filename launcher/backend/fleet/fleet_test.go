@@ -175,7 +175,7 @@ func (s *syncBuffer) Bytes() []byte {
 }
 
 func TestNewClient(t *testing.T) {
-	t.Parallel()
+	RegisterTestingT(t)
 
 	// instantiate client
 	ep := "http://localhost:4001"

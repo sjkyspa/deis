@@ -19,6 +19,7 @@ func (f *FleetClient) Start(container model.Container, wg *sync.WaitGroup, out, 
 	}
 
 	f.Fleet.CreateUnit(unit)
+	wg.Add(1)
 	var name string = unit.Name
 
 	lastSubState := "dead"
