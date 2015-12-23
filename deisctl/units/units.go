@@ -28,6 +28,7 @@ var Names = []string{
 	"deis-kube-proxy",
 	"deis-kube-scheduler",
 	"deis-registrator",
+	"deis-registrator-internal",
 }
 
 // URL is the GitHub url where these units can be refreshed from
