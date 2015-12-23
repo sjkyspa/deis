@@ -69,7 +69,7 @@ tests/*.key
 venv
 
 # Local user-data generated from user-data.example
-contrib/coreos/user-data
+#contrib/coreos/user-data
 
 # Local controller settings file
 controller/deis/local_settings.py
