@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 "github.com/deis/deis/launcher/model"
 	"sync"
+	"net/http"
 )
 
 
@@ -27,7 +28,7 @@ func Start(filename string, configURL *url.URL, backendURL *url.URL) error {
 		return err
 	}
 	backendURL.Scheme = "http"
-	backend, err := fleet.NewClient(*backendURL)
+	backend, err := fleet.NewClient(http.DefaultClient, *backendURL)
 	if err != nil {
 		return err
 	}
