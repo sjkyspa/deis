@@ -1,12 +1,14 @@
 package services
 
 import (
+	"github.com/deis/deis/client/controller/api"
 	"github.com/deis/deis/client/controller/client"
 	"github.com/deis/deis/version"
 	. "github.com/onsi/gomega"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"testing"
 )
 
@@ -62,4 +64,22 @@ func TestListService(t *testing.T) {
 	Expect(err).To(BeNil())
 
 	Expect(len(services)).To(Equal(1))
+
+	expected := []api.ServiceOffering{
+		api.ServiceOffering{
+			ServiceOfferingFields: api.ServiceOfferingFields{
+				ID:    "id",
+				Label: "label",
+			},
+			Plans: []api.ServicePlanFields{
+				api.ServicePlanFields{
+					Name: "small",
+				},
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(expected, services) {
+		t.Errorf("Expected %v, Got %v", expected, services)
+	}
 }
