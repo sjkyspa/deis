@@ -5,6 +5,7 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
+// Stacks route the request to specific method
 func Stacks(argv []string) error {
 	switch argv[0] {
 	case "stacks:init":
@@ -37,5 +38,3 @@ Options:
 	create := cmd.StackCreate(safeGetValue(args, "--app"), safeGetValue(args, "--stack"))
 	return create
 }
-
-

@@ -2,18 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	"golang.org/x/crypto/ssh"
-	"os"
-	"net"
-	"golang.org/x/crypto/ssh/agent"
-	"io"
+	"github.com/deis/deis/client/controller/api"
 	"github.com/deis/deis/client/controller/client"
 	"github.com/deis/deis/client/controller/models/apps"
-	"github.com/deis/deis/client/controller/api"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
+	"io"
+	"net"
+	"os"
 )
 
 var createNewApp = func(client *client.Client, appId string) (api.App, error) {
-
 
 	fmt.Print("Creating Application... ")
 	quit := progress()
@@ -30,9 +29,10 @@ var createNewApp = func(client *client.Client, appId string) (api.App, error) {
 	return app, nil
 }
 
-func StackCreate(appId, stackName string) error {
+// StackCreate init a stack
+func StackCreate(appID, stackName string) error {
 	c, err := client.New()
-	app, err := createNewApp(c, appId)
+	app, err := createNewApp(c, appID)
 	if err != nil {
 		return err
 	}
@@ -40,17 +40,17 @@ func StackCreate(appId, stackName string) error {
 	sshConfig := &ssh.ClientConfig{
 		User: "git",
 		Auth: []ssh.AuthMethod{
-			SSHAgent(),
+			sshAgent(),
 		},
 	}
 
 	if err != nil {
-		return  fmt.Errorf("Fail to get client config: %s", err)
+		return fmt.Errorf("Fail to get client config: %s", err)
 	}
 
-	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", c.ControllerURL.Host , 2222), sshConfig)
+	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", c.ControllerURL.Host, 2222), sshConfig)
 	if err != nil {
-		return  fmt.Errorf("Failed to dial: %s", err)
+		return fmt.Errorf("Failed to dial: %s", err)
 	}
 
 	session, err := connection.NewSession()
@@ -80,7 +80,7 @@ func StackCreate(appId, stackName string) error {
 	return nil
 }
 
-func SSHAgent() ssh.AuthMethod {
+func sshAgent() ssh.AuthMethod {
 	if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
 		return ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers)
 	}
