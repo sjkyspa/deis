@@ -44,6 +44,7 @@ Subcommands, use 'deis help [subcommand]' to learn more::
   certs         manage SSL endpoints for an app
   stacks        manage stack
   brokers       manage brokers for the platform
+  marketplace   manage service templates for the platform
 
   keys          manage ssh keys used for 'git push' deployments
   perms         manage permissions for applications
@@ -113,6 +114,8 @@ Use 'git push deis master' to deploy to an application.
 		err = parser.Stacks(argv)
 	case "brokers":
 		err = parser.Brokers(argv)
+	case "marketplace":
+		err = parser.Marketplace(argv)
 	case "help":
 		fmt.Print(usage)
 		return 0

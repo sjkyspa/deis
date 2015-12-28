@@ -44,7 +44,7 @@ func brokersCreate(argv []string) error {
 	usage := `
 Creates a new broker.
 
-Usage: deis brokers:create [<name>] <username> <password> <url>
+Usage: deis brokers:create <name> <username> <password> <url>
 `
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 	if err != nil {
