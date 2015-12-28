@@ -110,6 +110,8 @@ Use 'git push deis master' to deploy to an application.
 		err = parser.Users(argv)
 	case "stacks":
 		err = parser.Stacks(argv)
+	case "brokers":
+		err = parser.Brokers(argv)
 	case "help":
 		fmt.Print(usage)
 		return 0
