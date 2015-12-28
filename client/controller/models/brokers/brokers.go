@@ -37,3 +37,21 @@ func New(c *client.Client, brokerName, username, password string, url url.URL) (
 
 	return broker, nil
 }
+
+// List broker installed.
+func List(c *client.Client, count int) ([]api.Broker, int, error) {
+
+	var err error
+	resBody, count, err := c.LimitedRequest("/v1/brokers", count)
+
+	if err != nil {
+		return []api.Broker{}, -1, err
+	}
+
+	var brokers []api.Broker
+	if err = json.Unmarshal([]byte(resBody), &brokers); err != nil {
+		return []api.Broker{}, -1, err
+	}
+
+	return brokers, count, nil
+}

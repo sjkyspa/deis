@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"github.com/cde/version"
 	"github.com/deis/deis/client/cmd"
 	docopt "github.com/docopt/docopt-go"
 	"net/url"
@@ -47,7 +46,7 @@ Creates a new broker.
 
 Usage: deis brokers:create [<name>] <username> <password> <url>
 `
-	args, err := docopt.Parse(usage, argv, true, version.Version, true, true)
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
 	if err != nil {
 		return err
 	}
@@ -64,7 +63,27 @@ Usage: deis brokers:create [<name>] <username> <password> <url>
 }
 
 func brokersList(argv []string) error {
-	return nil
+	usage := `
+Lists brokders visible to the current user.
+
+Usage: deis brokers:list [options]
+
+Options:
+  -l --limit=<num>
+    the maximum number of results to display, defaults to config setting
+`
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+	if err != nil {
+		return err
+	}
+
+	results, err := responseLimit(safeGetValue(args, "--limit"))
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.BrokerList(results)
 }
 
 func brokersInfo(argv []string) error {
