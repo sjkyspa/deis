@@ -326,6 +326,24 @@ class KeyViewSet(BaseDeisViewSet):
     serializer_class = serializers.KeySerializer
 
 
+class ServiceInstanceViewSet(BaseDeisViewSet):
+    model = models.ServiceInstance
+    serializer_class = serializers.ServiceInstanceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post_save(self, service_instance):
+        service_instance.create()
+
+
+class BrokerServiceViewSet(BaseDeisViewSet):
+    model = models.BrokerService
+    serializer_class = serializers.BrokerServiceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post_save(self, service):
+        service.create()
+
+
 class BrokerViewSet(BaseDeisViewSet):
     """A viewset for interacting with Broker objects."""
     lookup_field = 'uuid'

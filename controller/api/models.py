@@ -12,7 +12,9 @@ import importlib
 import logging
 import re
 import time
+import json
 from threading import Thread
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -164,26 +166,70 @@ class UuidAuditedModel(AuditedModel):
 
 
 @python_2_unicode_compatible
+class ServiceInstance(UuidAuditedModel):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    # TODO change field name
+    service_id = models.ForeignKey("BrokerService")
+    plan_id = models.ForeignKey("ServicePlan")
+    organization_guid = models.TextField(blank=False, null=False)
+    space_guid = models.TextField(blank=False, null=False)
+    dashboard_url = models.TextField(blank=True, null=True)
+    # parameters = models.TextField(blank=False, null=False, unique=True)
+
+    def __str__(self):
+        return self.uuid
+
+    def create(self, *args, **kwargs):
+        instance_id = str(uuid4())
+        url = "http://{}:{}@{}/v2/service_instances/{}".format(self.service_id.broker.username,
+                                                               self.service_id.broker.password,
+                                                               self.service_id.broker.url,
+                                                               instance_id)
+        # request template
+        # body = {
+        #     "organization_guid": "org-guid-here",
+        #     "plan_id":           "plan-guid-here",
+        #     "service_id":        "service-guid-here",
+        #     "space_guid":        "space-guid-here",
+        #     "parameters":        {
+        #         "parameter1": 1,
+        #         "parameter2": "value"
+        #     }
+        # }
+        response = broker_client.provision(url, json.dumps(kwargs))
+        # TODO should handle 202
+        if response.status_code == 201:
+            data = response.json()
+            self.uuid = instance_id
+            self.dashboard_url = data['dashboard_url']
+            return super(ServiceInstance, self).save(**kwargs)
+        else:
+            print 'create broker failed'
+            return
+
+
+@python_2_unicode_compatible
 class ServicePlan(UuidAuditedModel):
     service = models.ForeignKey("BrokerService")
-    id = models.TextField(blank=False, null=False, unique=True)
-    name = models.TextField(blank=False, null=False, unique=True)
+    id = models.TextField(blank=False, null=False)
+    name = models.TextField(blank=False, null=False)
     description = models.TextField(blank=True, null=True)
     free = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.id
+        return self.uuid
 
 
 @python_2_unicode_compatible
 class BrokerService(UuidAuditedModel):
     broker = models.ForeignKey("Broker")
-    id = models.TextField(blank=False, null=False, unique=True)
-    name = models.TextField(blank=False, null=False, unique=True)
-    description = models.TextField(blank=False, null=False, unique=True)
+    # id = models.TextField(blank=False, null=False, unique=True)
+    name = models.TextField(blank=False, null=False)
+    description = models.TextField(blank=True, null=True)
+    bindable = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.id
+        return self.uuid
 
 
 @python_2_unicode_compatible
@@ -193,7 +239,7 @@ class Broker(UuidAuditedModel):
      """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    name = models.TextField(blank=False, null=False, unique=True)
+    name = models.TextField(blank=False, null=False)
     url = models.TextField(blank=False, null=False, unique=True)
     username = models.TextField(blank=True, null=True)
     password = models.TextField(blank=True, null=True)
@@ -210,11 +256,12 @@ class Broker(UuidAuditedModel):
             result = response.json()
             for service in result['services']:
                 config = BrokerService.objects.create(broker=self,
-                                                      id=service['id'],
+                                                      uuid=service['id'],
                                                       name=service['name'],
                                                       description=service['description'])
                 for plan in service['plans']:
                     ServicePlan.objects.create(service=config,
+                                               uuid=plan['id'],
                                                **plan)
             return super(Broker, self).save(**kwargs)
         else:

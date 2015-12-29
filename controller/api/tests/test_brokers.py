@@ -10,7 +10,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from api import broker_client
-from . import mock_broker_stub
+from . import mock_broker_stub, mock_provision
+from api.models import BrokerService, Broker
 
 
 class TestBrokers(TestCase):
@@ -41,7 +42,6 @@ class TestBrokers(TestCase):
             "username": "admin",
             "password": "secretpassw0rd"
         }
-
         response = self.client.post(url, json.dumps(body),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -63,4 +63,62 @@ class TestBrokers(TestCase):
         response = self.client.delete(url,
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
+
+    def test_services(self):
+        """
+        Test that a user can create, read and delete an broker
+        """
+        url = '/v1/brokers'
+        body = {
+            "name": "broker-auto-test",
+            "url": "https://broker.example.com",
+            "username": "admin",
+            "password": "secretpassw0rd"
+        }
+
+        response = self.client.post(url, json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        brokerIns = Broker.objects.filter(url="https://broker.example.com")
+        brokerServices = BrokerService.objects.filter(broker=brokerIns)
+        self.assertEqual(brokerServices.count(), 1)
+        # url = '/v1/services'
+        #
+        # response = self.client.get(url,
+        #                            HTTP_AUTHORIZATION='token {}'.format(self.token))
+        # self.assertEqual(response.status_code, 200)
+        # self.assertEqual(len(response.data['results']), 1)
+        # self.assertIn('service_plans_url', response.data)
+        # self.assertIn('name', response.data)
+        # self.assertIn('id', response.data)
+        #
+        # url = '/v1/services/{uuid}'.format(**locals())
+        # response = self.client.get(url,
+        #                            HTTP_AUTHORIZATION='token {}'.format(self.token))
+        # self.assertEqual(response.status_code, 200)
+        # self.assertIn('uuid', response.data)
+        #
+        # response = self.client.delete(url,
+        #                               HTTP_AUTHORIZATION='token {}'.format(self.token))
+        # self.assertEqual(response.status_code, 204)
+
+    def test_service_instance(self):
+        broker_client.provision = mock_provision
+        # need to generate a guid before invoke broker service
+        url = '/v1/service_instances'
+        body = {
+            "organization_guid": "org-guid-here",
+            "plan_id":           "1211b57f-f1b3-4279-a4a9-bdc435936031",
+            "service_id":        "1211b57f-f1b3-4279-a4a9-bdc43593603b",
+            "space_guid":        "space-guid-here",
+            "parameters":        {
+                "parameter1": "value"
+            }
+        }
+        response = self.client.post(url, json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        print response.data
+        self.assertEqual(response.status_code, 201)
 

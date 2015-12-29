@@ -54,17 +54,17 @@ def mock_broker_stub(url):
     resp.status_code = 200
     resp._content = json.dumps({
         "services": [{
-            "id": "1211b57f-f1b3-4279-a4a9-bdc43593603a",
+            "id": "1211b57f-f1b3-4279-a4a9-bdc43503603a",
             "name": "mysql",
             "description": "A MySQL-compatible relational database",
             "bindable": "true",
             "plans": [{
-                "id": "ee11b57f-f1b3-4279-a4a9-bdc4353239837",
+                "id": "1211b57f-f1b3-4279-a4b1-bdc43503603a",
                 "name": "small",
                 "description": "A small shared database with 100mb storage quota "
                                "and 10 connections"
             }, {
-                "id": "1211b57f-f1b3-4279-a4a9-bdc4359298349",
+                "id": "1211b57f-f1b3-4279-a4a9-aef43503602e",
                 "name": "large",
                 "description": "A large dedicated database with 10GB storage quota,"
                                " 512MB of RAM, and 100 connections",
@@ -79,6 +79,14 @@ def mock_broker_stub(url):
     })
     return resp
 
+
+def mock_provision(url, body):
+    resp = requests.Response()
+    resp.status_code = 201
+    resp._content = json.dumps({
+        "dashboard_url": "http://example-dashboard.com/9189kdfsk0vfnku"
+    })
+    return resp
 
 from .test_api_middleware import *  # noqa
 from .test_app import *  # noqa

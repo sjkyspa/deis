@@ -52,5 +52,53 @@
         "email": "autotest3@deis.io",
         "date_joined": "2013-05-10T16:08:09.357Z"
     }
+},
+{
+    "pk": "1211b57f-f1b3-4279-a4a9-bdc43593603a",
+    "model": "api.broker",
+    "fields": {
+        "name": "broker-auto-test",
+        "url": "https://brokers.example.com",
+        "username": "admin",
+        "password": "secretpassw0rd",
+        "updated": "2013-11-25T22:09:36.726Z",
+        "created": "2013-11-25T22:09:36.726Z",
+        "owner": 8
+    }
+},
+{
+    "pk": "1211b57f-f1b3-4279-a4a9-bdc43593603b",
+    "model": "api.brokerservice",
+    "fields": {
+        "name": "mysql",
+        "description": "A MySQL-compatible relational database",
+        "bindable": true,
+        "broker": "1211b57f-f1b3-4279-a4a9-bdc43593603a",
+        "updated": "2013-11-25T22:09:36.726Z",
+        "created": "2013-11-25T22:09:36.726Z"
+    }
+},
+{
+    "pk": "1211b57f-f1b3-4279-a4a9-bdc435936031",
+    "model": "api.serviceplan",
+    "fields": {
+        "name": "small",
+        "description": "A small shared database with 100mb storage quota and 10 connections",
+        "service": "1211b57f-f1b3-4279-a4a9-bdc43593603b",
+        "updated": "2013-11-25T22:09:36.726Z",
+        "created": "2013-11-25T22:09:36.726Z"
+    }
+},
+{
+    "pk": "1211b57f-f1b3-4279-a4a9-bec435936037",
+    "model": "api.serviceplan",
+    "fields": {
+        "name": "large",
+        "description": "A large dedicated database with 10GB storage quota, 512MB of RAM, and 100 connections",
+        "free": false,
+        "service": "1211b57f-f1b3-4279-a4a9-bdc43593603b",
+        "updated": "2013-11-25T22:09:36.726Z",
+        "created": "2013-11-25T22:09:36.726Z"
+    }
 }
 ]

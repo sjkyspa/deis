@@ -261,6 +261,28 @@ class ContainerSerializer(ModelSerializer):
         return "v{}".format(obj.release.version)
 
 
+class ServiceInstanceSerializer(ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    fingerprint = serializers.CharField(read_only=True)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+
+    class Meta:
+        """Metadata options for a KeySerializer."""
+        model = models.ServiceInstance
+
+
+class BrokerServiceSerializer(ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    fingerprint = serializers.CharField(read_only=True)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+
+    class Meta:
+        """Metadata options for a KeySerializer."""
+        model = models.BrokerService
+
+
 class BrokerSerializer(ModelSerializer):
     """Serialize a :class:`~api.models.Key` model."""
 
