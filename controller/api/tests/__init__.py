@@ -88,6 +88,22 @@ def mock_provision(url, body):
     })
     return resp
 
+
+def mock_binding(url, body):
+    resp = requests.Response()
+    resp.status_code = 201
+    resp._content = json.dumps({
+        "credentials": {
+            "uri": "mysql://mysqluser:pass@mysqlhost:3306/dbname",
+            "username": "mysqluser",
+            "password": "pass",
+            "host": "mysqlhost",
+            "port": 3306,
+            "database": "dbname"
+        }
+    })
+    return resp
+
 from .test_api_middleware import *  # noqa
 from .test_app import *  # noqa
 from .test_auth import *  # noqa

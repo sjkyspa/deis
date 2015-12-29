@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from api import broker_client
-from . import mock_broker_stub, mock_provision
+from . import mock_broker_stub, mock_provision, mock_binding
 from api.models import BrokerService, Broker
 
 
@@ -66,7 +66,8 @@ class TestBrokers(TestCase):
 
     def test_services(self):
         """
-        Test that a user can create, read and delete an broker
+        Test that when a valid broker is imported, the services and plans
+        defined in the broker would be recorded
         """
         url = '/v1/brokers'
         body = {
@@ -105,7 +106,6 @@ class TestBrokers(TestCase):
 
     def test_service_instance(self):
         broker_client.provision = mock_provision
-        # need to generate a guid before invoke broker service
         url = '/v1/service_instances'
         body = {
             "organization_guid": "org-guid-here",
@@ -119,6 +119,19 @@ class TestBrokers(TestCase):
         response = self.client.post(url, json.dumps(body),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        print response.data
         self.assertEqual(response.status_code, 201)
 
+    def test_service_binding(self):
+        broker_client.binding = mock_binding
+        url = '/v1/service_bindings'
+        body = {
+            "service_instance_id": "2909e1b9-1e70-42e6-a6e1-67d2fa81ee71",
+            "app_id": "5a09a1e0-a27e-4839-928b-449310ed90e0",
+            "parameters": {
+                "the_service_broker": "wants this object"
+            }
+        }
+        response = self.client.post(url, json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)

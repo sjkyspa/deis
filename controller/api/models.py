@@ -166,6 +166,17 @@ class UuidAuditedModel(AuditedModel):
 
 
 @python_2_unicode_compatible
+class ServiceBinding(UuidAuditedModel):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    service_instance_id = models.ForeignKey("ServiceInstance")
+    app_id = models.ForeignKey("App")
+    # parameters = models.TextField(blank=False, null=False, unique=True)
+
+    def __str__(self):
+        return self.uuid
+
+
+@python_2_unicode_compatible
 class ServiceInstance(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     # TODO change field name
