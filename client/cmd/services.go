@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/deis/deis/client/controller/client"
 	"github.com/deis/deis/client/controller/models/services"
+	"os"
 )
 
 // ServiceList lists services
@@ -33,7 +34,20 @@ func ServiceList(results int) error {
 }
 
 // ServiceCreate creates an service.
-func ServiceCreate() error {
+func ServiceCreate(serviceName, planName, serviceInstanceName string) error {
+	c, err := client.New()
+
+	if err != nil {
+		return err
+	}
+
+	serviceInstance, err := services.New(c, serviceName, planName, serviceInstanceName)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stdout, "Instance created %s", serviceInstance.Name)
+
 	return nil
 }
 

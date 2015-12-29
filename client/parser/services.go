@@ -77,7 +77,25 @@ Options:
 }
 
 func serviceCreate(argv []string) error {
-	return nil
+	usage := `
+Create service instance visible to the current user.
+
+Usage: deis services:create <service-name> <plan-name> <service-instance-name> [-c <config>]
+
+Options:
+  -c
+    the config for the service when instantiation
+`
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+
+	if err != nil {
+		return err
+	}
+	serviceName := safeGetValue(args, "<service-name>")
+	planName := safeGetValue(args, "<plan-name>")
+	serviceInstanceName := safeGetValue(args, "<service-instance-name>")
+
+	return cmd.ServiceCreate(serviceName, planName, serviceInstanceName)
 }
 
 func serviceUpdate(argv []string) error {

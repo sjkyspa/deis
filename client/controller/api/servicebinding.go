@@ -6,3 +6,10 @@ type ServiceBindingCreateRequest struct {
 	AppID             string                 `json:"app_id"`
 	Params            map[string]interface{} `json:"parameters,omitempty"`
 }
+
+// ServiceBindingFields is the definition of the service binding
+type ServiceBindingFields struct {
+	ID    string `json:"id"`
+	URL   string `json:"url"`
+	AppID string `json:"app_id"`
+}

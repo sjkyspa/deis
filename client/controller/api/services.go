@@ -35,6 +35,25 @@ type ServicePlan struct {
 
 // ServiceInstanceCreateRequest is the request to create service instance
 type ServiceInstanceCreateRequest struct {
+	Name        string `json:"name"`
 	ServiceName string `json:"service_name"`
 	PlanName    string `json:"plan_name"`
+}
+
+// ServiceInstanceFields is the definition of the service instance
+type ServiceInstanceFields struct {
+	ID               string
+	Name             string
+	SysLogDrainURL   string
+	ApplicationNames []string
+	Params           map[string]interface{}
+	DashboardURL     string
+}
+
+// ServiceInstance is the definition the service instance
+type ServiceInstance struct {
+	ServiceInstanceFields
+	ServiceBindings []ServiceBindingFields
+	ServicePlan     ServicePlanFields
+	ServiceOffering ServiceOfferingFields
 }

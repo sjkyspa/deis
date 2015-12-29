@@ -122,7 +122,7 @@ func TestCreateService(t *testing.T) {
 
 	client := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	service, err := New(&client, "service_name", "plan_name")
+	service, err := New(&client, "service_instance_name", "service_name", "plan_name")
 
 	Expect(err).To(BeNil())
 
