@@ -21,3 +21,28 @@ func List(c *client.Client, results int) ([]api.ServiceOffering, int, error) {
 
 	return services, count, nil
 }
+
+// New create service on a Deis controller.
+func New(c *client.Client, serviceName, planName string) (api.ServiceOffering, error) {
+	body := []byte{}
+	var err error
+	req := api.ServiceInstanceCreateRequest{ServiceName: serviceName, PlanName: planName}
+	body, err = json.Marshal(req)
+
+	if err != nil {
+		return api.ServiceOffering{}, err
+	}
+
+	res, err := c.BasicRequest("POST", "/v1/service-instances/", body)
+
+	if err != nil {
+		return api.ServiceOffering{}, err
+	}
+
+	var services api.ServiceOffering
+	if err = json.Unmarshal([]byte(res), &services); err != nil {
+		return api.ServiceOffering{}, err
+	}
+
+	return services, nil
+}

@@ -32,3 +32,9 @@ type ServicePlan struct {
 	ServicePlanFields
 	ServiceOffering ServiceOfferingFields
 }
+
+// ServiceInstanceCreateRequest is the request to create service instance
+type ServiceInstanceCreateRequest struct {
+	ServiceName string `json:"service_name"`
+	PlanName    string `json:"plan_name"`
+}
