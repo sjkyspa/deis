@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/deis/deis/client/controller/client"
+	"github.com/deis/deis/client/controller/models/servicebinding"
 	"github.com/deis/deis/client/controller/models/services"
 	"os"
 )
@@ -67,7 +68,22 @@ func ServiceRename() error {
 }
 
 // ServiceBind bind the service to the app
-func ServiceBind() error {
+func ServiceBind(appName, serviceInstanceName string) error {
+	c, err := client.New()
+
+	if err != nil {
+		return err
+	}
+
+	err = servicebinding.Bind(c, serviceInstanceName, appName, nil)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprint(os.Stdout, "Binding created")
+
+	ConfigSet(appName, []string{"DATABASE=test"})
+
 	return nil
 }
 

@@ -111,7 +111,24 @@ func serviceRename(argv []string) error {
 }
 
 func serviceBind(argv []string) error {
-	return nil
+	usage := `
+Create service instance visible to the current user.
+
+Usage: deis services:bind <app-name> <service-instance-name> [-c <config>]
+
+Options:
+  -c
+    the config for the service when instantiation
+`
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+
+	if err != nil {
+		return err
+	}
+	appName := safeGetValue(args, "<app-name>")
+	serviceInstanceName := safeGetValue(args, "<service-instance-name>")
+
+	return cmd.ServiceBind(appName, serviceInstanceName)
 }
 
 func serviceUnbind(argv []string) error {
