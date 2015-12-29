@@ -17,7 +17,7 @@ from api.models import BrokerService, Broker
 class TestBrokers(TestCase):
     """ Tests brokers endpoint"""
 
-    fixtures = ['tests.json']
+    fixtures = ['tests.json', 'test_broker.json']
 
     def setUp(self):
         self.user = User.objects.get(username='autotest')
