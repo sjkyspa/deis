@@ -10,3 +10,8 @@ def catalog(url):
 def provision(url, body):
     response = requests.post(url, body)
     return response
+
+
+def binding(url, body):
+    response = requests.post(url, body)
+    return response

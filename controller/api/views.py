@@ -335,6 +335,15 @@ class ServiceInstanceViewSet(BaseDeisViewSet):
         service_instance.create()
 
 
+class ServiceBindingViewSet(BaseDeisViewSet):
+    model = models.ServiceBinding
+    serializer_class = serializers.ServiceBindingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post_save(self, service_binding):
+        service_binding.create()
+
+
 class BrokerServiceViewSet(BaseDeisViewSet):
     model = models.BrokerService
     serializer_class = serializers.BrokerServiceSerializer

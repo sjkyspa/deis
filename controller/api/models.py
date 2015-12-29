@@ -170,10 +170,27 @@ class ServiceBinding(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     service_instance_id = models.ForeignKey("ServiceInstance")
     app_id = models.ForeignKey("App")
+    credentials = JSONField(default={}, blank=True)
     # parameters = models.TextField(blank=False, null=False, unique=True)
 
     def __str__(self):
         return self.uuid
+
+    def create(self, *args, **kwargs):
+        binding_id = str(uuid4())
+        url = "http://{}:{}@{}/v2/service_instances/{}/service_bindings/{}"\
+            .format(self.service_instance_id.service_id.broker.username,
+                    self.service_instance_id.service_id.broker.password,
+                    self.service_instance_id.service_id.broker.url,
+                    self.service_instance_id.uuid,
+                    binding_id)
+        response = broker_client.binding(url, json.dumps(kwargs))
+        if response.status_code == 200 or response.status_code == 201:
+            self.credentials = response.json()
+            return super(ServiceBinding, self).save(**kwargs)
+        else:
+            print 'binding failed'
+            return
 
 
 @python_2_unicode_compatible
