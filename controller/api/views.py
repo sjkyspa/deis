@@ -15,7 +15,6 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.authtoken.models import Token
 
 from api import authentication, models, permissions, serializers, viewsets
-
 import requests
 
 
@@ -325,6 +324,26 @@ class KeyViewSet(BaseDeisViewSet):
     model = models.Key
     permission_classes = [IsAuthenticated, permissions.IsOwner]
     serializer_class = serializers.KeySerializer
+
+
+class BrokerViewSet(BaseDeisViewSet):
+    """A viewset for interacting with Broker objects."""
+    lookup_field = 'uuid'
+    model = models.Broker
+    serializer_class = serializers.BrokerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post_save(self, broker):
+        broker.create()
+
+    # def create(self):
+    #     url = 'http://username:password@broker-url/v2/catalog'
+    #     response = broker_client.catalog(url)
+    #     if response.status_code == 200
+    #         services = response.data['services']
+    #         plans = services['plans']
+    #         BrokerService.object.save(services)
+    #         BrokerPlan.objects.save(plans)
 
 
 class ReleaseViewSet(AppResourceViewSet):

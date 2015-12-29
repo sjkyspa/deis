@@ -32,7 +32,7 @@ from rest_framework.authtoken.models import Token
 from api import fields, utils, exceptions
 from registry import publish_release
 from utils import dict_diff, fingerprint
-
+from api import broker_client
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,7 @@ def close_db_connections(func, *args, **kwargs):
     Note this is necessary to work around:
     https://code.djangoproject.com/ticket/22420
     """
+
     def _close_db_connections(*args, **kwargs):
         ret = None
         try:
@@ -53,6 +54,7 @@ def close_db_connections(func, *args, **kwargs):
             for conn in connections.all():
                 conn.close()
         return ret
+
     return _close_db_connections
 
 
@@ -162,6 +164,69 @@ class UuidAuditedModel(AuditedModel):
 
 
 @python_2_unicode_compatible
+class ServicePlan(UuidAuditedModel):
+    service = models.ForeignKey("BrokerService")
+    id = models.TextField(blank=False, null=False, unique=True)
+    name = models.TextField(blank=False, null=False, unique=True)
+    description = models.TextField(blank=True, null=True)
+    free = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.id
+
+
+@python_2_unicode_compatible
+class BrokerService(UuidAuditedModel):
+    broker = models.ForeignKey("Broker")
+    id = models.TextField(blank=False, null=False, unique=True)
+    name = models.TextField(blank=False, null=False, unique=True)
+    description = models.TextField(blank=False, null=False, unique=True)
+
+    def __str__(self):
+        return self.id
+
+
+@python_2_unicode_compatible
+class Broker(UuidAuditedModel):
+    """
+     Broker used to provide add-on services
+     """
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    name = models.TextField(blank=False, null=False, unique=True)
+    url = models.TextField(blank=False, null=False, unique=True)
+    username = models.TextField(blank=True, null=True)
+    password = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.uuid
+
+    def create(self, *args, **kwargs):
+        url = "http://{}:{}@{}/v2/catalog".format(self.username,
+                                                  self.password,
+                                                  self.url)
+        response = broker_client.catalog(url)
+        if response.status_code == 200:
+            result = response.json()
+            for service in result['services']:
+                config = BrokerService.objects.create(broker=self,
+                                                      id=service['id'],
+                                                      name=service['name'],
+                                                      description=service['description'])
+                for plan in service['plans']:
+                    ServicePlan.objects.create(service=config,
+                                               **plan)
+            return super(Broker, self).save(**kwargs)
+        else:
+            print 'create broker failed'
+
+    def delete(self, *args, **kwargs):
+        """Delete this application including all containers"""
+
+        super(Broker, self).delete(*args, **kwargs)
+
+
+@python_2_unicode_compatible
 class App(UuidAuditedModel):
     """
     Application used to service requests on behalf of end-users
@@ -225,6 +290,7 @@ class App(UuidAuditedModel):
 
     def create(self, *args, **kwargs):
         """Create a new application with an initial config and release"""
+
         config = Config.objects.create(owner=self.owner, app=self)
         Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=None)
 
@@ -392,7 +458,7 @@ class App(UuidAuditedModel):
                 break
             except exceptions.HealthcheckException as e:
                 try:
-                    next_delay = delay * intervals[i+1]
+                    next_delay = delay * intervals[i + 1]
                     msg = "{}; trying again in {} seconds".format(e, next_delay)
                     log_event(self, msg, logging.WARNING)
                 except IndexError:
@@ -597,6 +663,7 @@ class Container(UuidAuditedModel):
 
     def short_name(self):
         return "{}.{}.{}".format(self.app.id, self.type, self.num)
+
     short_name.short_description = 'Name'
 
     def __str__(self):
@@ -965,7 +1032,7 @@ class Release(UuidAuditedModel):
                 if diff.get('added') or diff.get('changed') or diff.get('deleted'):
                     changes.append('cpu')
                 if changes:
-                    changes = 'changed limits for '+', '.join(changes)
+                    changes = 'changed limits for ' + ', '.join(changes)
                     self.summary += "{} {}".format(self.config.owner, changes)
                 # if the tags changed, log the dict diff
                 changes = []
@@ -1219,7 +1286,6 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 _etcd_client = get_etcd_client()
-
 
 if _etcd_client:
     post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')

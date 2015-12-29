@@ -1,10 +1,10 @@
-
 from __future__ import unicode_literals
 import logging
 
 from django.test.client import RequestFactory, Client
 from django.test.simple import DjangoTestSuiteRunner
 import requests
+import json
 
 
 # add patch support to built-in django test client
@@ -49,6 +49,37 @@ def mock_status_ok(*args, **kwargs):
     return resp
 
 
+def mock_broker_stub(url):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content = json.dumps({
+        "services": [{
+            "id": "1211b57f-f1b3-4279-a4a9-bdc43593603a",
+            "name": "mysql",
+            "description": "A MySQL-compatible relational database",
+            "bindable": "true",
+            "plans": [{
+                "id": "ee11b57f-f1b3-4279-a4a9-bdc4353239837",
+                "name": "small",
+                "description": "A small shared database with 100mb storage quota "
+                               "and 10 connections"
+            }, {
+                "id": "1211b57f-f1b3-4279-a4a9-bdc4359298349",
+                "name": "large",
+                "description": "A large dedicated database with 10GB storage quota,"
+                               " 512MB of RAM, and 100 connections",
+                "free": "false"
+            }],
+            "dashboard_client": {
+                "id": "client-id-1",
+                "secret": "secret-1",
+                "redirect_uri": "https://dashboard.service.com"
+            }
+        }]
+    })
+    return resp
+
+
 from .test_api_middleware import *  # noqa
 from .test_app import *  # noqa
 from .test_auth import *  # noqa
@@ -64,3 +95,4 @@ from .test_perm import *  # noqa
 from .test_release import *  # noqa
 from .test_scheduler import *  # noqa
 from .test_users import *  # noqa
+from .test_brokers import *  # noqa
