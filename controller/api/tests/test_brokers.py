@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from api import broker_client
+from api.models import BrokerService, Broker
 from . import mock_broker_stub
 
 
@@ -37,7 +38,7 @@ class TestBrokers(TestCase):
         url = '/v1/brokers'
         body = {
             "name": "broker-auto-test",
-            "url": "https://broker.example.com",
+            "url": "broker.example.com",
             "username": "admin",
             "password": "secretpassw0rd"
         }
@@ -47,6 +48,13 @@ class TestBrokers(TestCase):
         self.assertEqual(response.status_code, 201)
         uuid = response.data['uuid']  # noqa
         self.assertIn('uuid', response.data)
+        """
+        Test that when a valid broker is imported, the services and plans
+        defined in the broker would be recorded
+        """
+        brokerIns = Broker.objects.filter(url="broker.example.com")
+        brokerServices = BrokerService.objects.filter(broker=brokerIns)
+        self.assertEqual(brokerServices.count(), 1)
 
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))

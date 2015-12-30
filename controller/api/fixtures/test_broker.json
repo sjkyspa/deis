@@ -35,6 +35,18 @@
         }
     },
     {
+        "pk": "1211b57f-f1b3-4279-a4a9-bdc43594602c",
+        "model": "api.brokerservice",
+        "fields": {
+            "name": "postgres",
+            "description": "A postgres-compatible relational database",
+            "bindable": true,
+            "broker": "1211b57f-f1b3-4279-a4a9-bdc43593603a",
+            "updated": "2013-11-25T22:09:36.726Z",
+            "created": "2013-11-25T22:09:36.726Z"
+        }
+    },
+    {
         "pk": "1211b57f-f1b3-4279-a4a9-bdc435936031",
         "model": "api.serviceplan",
         "fields": {

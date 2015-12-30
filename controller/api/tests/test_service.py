@@ -1,10 +1,8 @@
 from __future__ import unicode_literals
-import json
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
-from api.models import BrokerService, Broker
 from api import broker_client
 from . import mock_broker_stub
 
@@ -34,7 +32,7 @@ class TestService(TestCase):
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         body = {'count': response.data['count'], 'results': response.data['results']}
-        self.assertEqual(body['count'], 1)
+        self.assertEqual(body['count'], 2)
         service = body['results'][0]
         self.assertEqual(service['name'], 'mysql')
         self.assertEqual(service['bindable'], True)
@@ -54,23 +52,13 @@ class TestService(TestCase):
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
 
-    def test_services_creation_from_broker(self):
-        """
-        Test that when a valid broker is imported, the services and plans
-        defined in the broker would be recorded
-        """
-        url = '/v1/brokers'
-        body = {
-            "name": "broker-auto-test",
-            "url": "broker.example.com",
-            "username": "admin",
-            "password": "secretpassw0rd"
-        }
+    def test_services_list_with_query_parameters(self):
+        response = self.client.get('/v1/services?name=mysql',
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)
 
-        response = self.client.post(url, json.dumps(body),
-                                    content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 201)
-        brokerIns = Broker.objects.filter(url="broker.example.com")
-        brokerServices = BrokerService.objects.filter(broker=brokerIns)
-        self.assertEqual(brokerServices.count(), 1)
+        response = self.client.get('/v1/services?name=redis',
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 0)

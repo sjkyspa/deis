@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from guardian.shortcuts import assign_perm, get_objects_for_user, \
     get_users_with_perms, remove_perm
-from rest_framework import mixins, renderers, status
+from rest_framework import mixins, renderers, status, filters
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -553,6 +553,8 @@ class BrokerServiceViewSet(viewsets.ModelViewSet):
     model = models.BrokerService
     serializer_class = serializers.BrokerServiceSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('name', 'description', 'uuid')
 
     def get_queryset(self, *args, **kwargs):
         return self.model.objects.all(*args, **kwargs)

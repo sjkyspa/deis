@@ -20,3 +20,4 @@ semantic_version==2.4.2
 simpleflock==0.0.2
 South==1.0.2
 static==1.1.1
+django-filter==0.11.0
