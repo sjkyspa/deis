@@ -349,6 +349,9 @@ class BrokerServiceViewSet(BaseDeisViewSet):
     serializer_class = serializers.BrokerServiceSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return self.model.objects.all()
+
     def post_save(self, service):
         service.create()
 

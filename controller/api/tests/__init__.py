@@ -120,3 +120,4 @@ from .test_release import *  # noqa
 from .test_scheduler import *  # noqa
 from .test_users import *  # noqa
 from .test_brokers import *  # noqa
+from .test_service import *  # noqa

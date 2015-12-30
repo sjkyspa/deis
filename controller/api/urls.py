@@ -81,6 +81,11 @@ urlpatterns = patterns(
         views.ServiceBindingViewSet.as_view({'get': 'list', 'post': 'create'})),
     url(r'^service_bindings/(?P<id>.+)/?',
         views.ServiceBindingViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    # services
+    url(r'^services/?',
+        views.BrokerServiceViewSet.as_view({'get': 'list', 'post': 'create'})),
+    url(r'^services/(?P<id>.+)/?',
+        views.BrokerServiceViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     # key
     url(r'^keys/(?P<id>.+)/?',
         views.KeyViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
