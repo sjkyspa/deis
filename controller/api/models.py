@@ -238,7 +238,7 @@ class ServiceInstance(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class ServicePlan(UuidAuditedModel):
-    service = models.ForeignKey("BrokerService")
+    service = models.ForeignKey("BrokerService", related_name="plans")
     id = models.TextField(blank=False, null=False)
     name = models.TextField(blank=False, null=False)
     description = models.TextField(blank=True, null=True)

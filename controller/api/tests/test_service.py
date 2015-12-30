@@ -30,7 +30,11 @@ class TestService(TestCase):
         self.assertEqual(response.status_code, 200)
 
         body = {'count': response.data['count'], 'results': response.data['results']}
-
         self.assertEqual(body['count'], 1)
-        self.assertEqual(body['results'][0]['name'], 'mysql')
-        self.assertEqual(body['results'][0]['bindable'], True)
+        service = body['results'][0]
+        self.assertEqual(service['name'], 'mysql')
+        self.assertEqual(service['bindable'], True)
+
+        plans = service['plans']
+        self.assertEqual(len(plans), 2)
+        self.assertEqual(plans[0]['name'], 'small')
