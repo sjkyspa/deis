@@ -66,26 +66,6 @@ urlpatterns = patterns(
         views.AppViewSet.as_view({'get': 'retrieve', 'post': 'update', 'delete': 'destroy'})),
     url(r'^apps/?',
         views.AppViewSet.as_view({'get': 'list', 'post': 'create'})),
-    # brokers
-    url(r'^brokers/(?P<uuid>.+)/?',
-        views.BrokerViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
-    url(r'^brokers/?',
-        views.BrokerViewSet.as_view({'get': 'list', 'post': 'create'})),
-    # service_instances
-    url(r'^service_instances/?',
-        views.ServiceInstanceViewSet.as_view({'get': 'list', 'post': 'create'})),
-    url(r'^service_instances/(?P<id>.+)/?',
-        views.ServiceInstanceViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
-    # service_bindings
-    url(r'^service_bindings/?',
-        views.ServiceBindingViewSet.as_view({'get': 'list', 'post': 'create'})),
-    url(r'^service_bindings/(?P<id>.+)/?',
-        views.ServiceBindingViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
-    # services
-    url(r'^services/?',
-        views.BrokerServiceViewSet.as_view({'get': 'list', 'post': 'create'})),
-    url(r'^services/(?P<id>.+)/?',
-        views.BrokerServiceViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     # key
     url(r'^keys/(?P<id>.+)/?',
         views.KeyViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
@@ -120,4 +100,24 @@ urlpatterns = patterns(
         views.CertificateViewSet.as_view({'get': 'list', 'post': 'create'})),
     # list users
     url(r'^users/', views.UserView.as_view({'get': 'list'})),
+    # brokers
+    url(r'^brokers/(?P<uuid>.+)/?',
+        views.BrokerViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    url(r'^brokers/?',
+        views.BrokerViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # services
+    url(r'^services/(?P<uuid>.+)/?',
+        views.BrokerServiceViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    url(r'^services/?',
+        views.BrokerServiceViewSet.as_view({'get': 'list'})),
+    # service_instances
+    url(r'^service_instances/(?P<id>.+)/?',
+        views.ServiceInstanceViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    url(r'^service_instances/?',
+        views.ServiceInstanceViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # service_bindings
+    url(r'^service_bindings/(?P<uuid>.+)/?',
+        views.ServiceBindingViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    url(r'^service_bindings/?',
+        views.ServiceBindingViewSet.as_view({'get': 'list', 'post': 'create'})),
 )

@@ -11,7 +11,6 @@ from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from api import broker_client
 from . import mock_broker_stub, mock_provision, mock_binding
-from api.models import BrokerService, Broker
 
 
 class TestBrokers(TestCase):
@@ -63,46 +62,6 @@ class TestBrokers(TestCase):
         response = self.client.delete(url,
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
-
-    def test_services(self):
-        """
-        Test that when a valid broker is imported, the services and plans
-        defined in the broker would be recorded
-        """
-        url = '/v1/brokers'
-        body = {
-            "name": "broker-auto-test",
-            "url": "https://broker.example.com",
-            "username": "admin",
-            "password": "secretpassw0rd"
-        }
-
-        response = self.client.post(url, json.dumps(body),
-                                    content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 201)
-        brokerIns = Broker.objects.filter(url="https://broker.example.com")
-        brokerServices = BrokerService.objects.filter(broker=brokerIns)
-        self.assertEqual(brokerServices.count(), 1)
-        # url = '/v1/services'
-        #
-        # response = self.client.get(url,
-        #                            HTTP_AUTHORIZATION='token {}'.format(self.token))
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(len(response.data['results']), 1)
-        # self.assertIn('service_plans_url', response.data)
-        # self.assertIn('name', response.data)
-        # self.assertIn('id', response.data)
-        #
-        # url = '/v1/services/{uuid}'.format(**locals())
-        # response = self.client.get(url,
-        #                            HTTP_AUTHORIZATION='token {}'.format(self.token))
-        # self.assertEqual(response.status_code, 200)
-        # self.assertIn('uuid', response.data)
-        #
-        # response = self.client.delete(url,
-        #                               HTTP_AUTHORIZATION='token {}'.format(self.token))
-        # self.assertEqual(response.status_code, 204)
 
     def test_service_instance(self):
         broker_client.provision = mock_provision

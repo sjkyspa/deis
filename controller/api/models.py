@@ -196,7 +196,7 @@ class ServiceBinding(UuidAuditedModel):
 @python_2_unicode_compatible
 class ServiceInstance(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    # TODO change field name
+    # FIXME change field name
     service_id = models.ForeignKey("BrokerService")
     plan_id = models.ForeignKey("ServicePlan")
     organization_guid = models.TextField(blank=False, null=False)
@@ -225,7 +225,7 @@ class ServiceInstance(UuidAuditedModel):
         #     }
         # }
         response = broker_client.provision(url, json.dumps(kwargs))
-        # TODO should handle 202
+        # FIXME should handle 202
         if response.status_code == 201:
             data = response.json()
             self.uuid = instance_id

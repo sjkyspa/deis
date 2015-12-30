@@ -26,3 +26,12 @@ class OwnerViewSet(viewsets.ModelViewSet):
 
         Leave it up to child classes to implement."""
         pass
+
+
+class ModelViewSet(viewsets.ModelViewSet):
+    def post_save(self, obj):
+        """A post_save hook for performing actions after the object has been pushed to the
+        database.
+
+        Leave it up to child classes to implement."""
+        pass

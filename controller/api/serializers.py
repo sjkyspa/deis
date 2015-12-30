@@ -292,15 +292,12 @@ class ServicePlanSerializer(ModelSerializer):
 
 
 class BrokerServiceSerializer(ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
     plans = ServicePlanSerializer(many=True, read_only=True)
-    fingerprint = serializers.CharField(read_only=True)
-    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
-    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a KeySerializer."""
         model = models.BrokerService
+        fields = ['uuid', 'name', 'description', 'bindable', "plans"]
 
 
 class BrokerSerializer(ModelSerializer):

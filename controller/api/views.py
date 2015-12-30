@@ -344,16 +344,14 @@ class ServiceBindingViewSet(BaseDeisViewSet):
         service_binding.create()
 
 
-class BrokerServiceViewSet(BaseDeisViewSet):
+class BrokerServiceViewSet(viewsets.ModelViewSet):
+    lookup_field = 'uuid'
     model = models.BrokerService
     serializer_class = serializers.BrokerServiceSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return self.model.objects.all()
-
-    def post_save(self, service):
-        service.create()
+    def get_queryset(self, *args, **kwargs):
+        return self.model.objects.all(*args, **kwargs)
 
 
 class BrokerViewSet(BaseDeisViewSet):
@@ -365,15 +363,6 @@ class BrokerViewSet(BaseDeisViewSet):
 
     def post_save(self, broker):
         broker.create()
-
-    # def create(self):
-    #     url = 'http://username:password@broker-url/v2/catalog'
-    #     response = broker_client.catalog(url)
-    #     if response.status_code == 200
-    #         services = response.data['services']
-    #         plans = services['plans']
-    #         BrokerService.object.save(services)
-    #         BrokerPlan.objects.save(plans)
 
 
 class ReleaseViewSet(AppResourceViewSet):
