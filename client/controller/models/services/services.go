@@ -37,7 +37,7 @@ func New(c *client.Client, serviceInstanceName, serviceName, planName string) (a
 		return api.ServiceInstance{}, err
 	}
 
-	res, err := c.BasicRequest("POST", "/v1/service-instances/", body)
+	res, err := c.BasicRequest("POST", "/v1/service_instances/", body)
 
 	if err != nil {
 		return api.ServiceInstance{}, err

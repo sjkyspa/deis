@@ -1092,10 +1092,10 @@ class ServiceBinding(UuidAuditedModel):
 class ServiceInstance(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     # FIXME change field name
-    service_id = models.ForeignKey("BrokerService")
+    service_id = models.ForeignKey("BrokerService", null=True)
     plan_id = models.ForeignKey("ServicePlan")
-    organization_guid = models.TextField(blank=False, null=False)
-    space_guid = models.TextField(blank=False, null=False)
+    organization_guid = models.TextField(blank=True, null=True)
+    space_guid = models.TextField(blank=True, null=True)
     dashboard_url = models.TextField(blank=True, null=True)
     # parameters = models.TextField(blank=False, null=False, unique=True)
 
@@ -1103,23 +1103,22 @@ class ServiceInstance(UuidAuditedModel):
         return self.uuid
 
     def create(self, *args, **kwargs):
+        self.service_id = self.plan_id.service
         instance_id = str(uuid4())
         url = "http://{}:{}@{}/v2/service_instances/{}".format(self.service_id.broker.username,
                                                                self.service_id.broker.password,
                                                                self.service_id.broker.url,
                                                                instance_id)
-        # request template
-        # body = {
-        #     "organization_guid": "org-guid-here",
-        #     "plan_id":           "plan-guid-here",
-        #     "service_id":        "service-guid-here",
-        #     "space_guid":        "space-guid-here",
-        #     "parameters":        {
-        #         "parameter1": 1,
-        #         "parameter2": "value"
-        #     }
-        # }
-        response = broker_client.provision(url, json.dumps(kwargs))
+        self.organization_guid = str(uuid4())
+        self.space_guid = str(uuid4())
+        # TODO will supply additional parameters for broker api
+        body = {
+            "organization_guid": self.organization_guid,
+            "plan_id":           self.plan_id,
+            "service_id":        self.service_id,
+            "space_guid":        self.space_guid
+        }
+        response = broker_client.provision(url, body)
         # FIXME should handle 202
         if response.status_code == 201:
             data = response.json()

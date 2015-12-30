@@ -62,7 +62,7 @@ class TestService(TestCase):
         url = '/v1/brokers'
         body = {
             "name": "broker-auto-test",
-            "url": "https://broker.example.com",
+            "url": "broker.example.com",
             "username": "admin",
             "password": "secretpassw0rd"
         }
@@ -71,6 +71,6 @@ class TestService(TestCase):
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
-        brokerIns = Broker.objects.filter(url="https://broker.example.com")
+        brokerIns = Broker.objects.filter(url="broker.example.com")
         brokerServices = BrokerService.objects.filter(broker=brokerIns)
         self.assertEqual(brokerServices.count(), 1)

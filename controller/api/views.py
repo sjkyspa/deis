@@ -515,7 +515,6 @@ class ServiceInstanceViewSet(BaseDeisViewSet):
         polling_url = deprovision_url+"/last_operation"
 
         response = broker_client.deprovisioning(deprovision_url)
-        print response.status_code
         if response.status_code != 202:
             return Response({'detail': str(response.json())}, status=response.status_code)
 

@@ -33,10 +33,7 @@ class TestServiceInstances(TestCase):
     def test_service_instance_creation(self):
         url = '/v1/service_instances'
         body = {
-            "organization_guid": "org-guid-here",
             "plan_id":           "1211b57f-f1b3-4279-a4a9-bdc435936031",
-            "service_id":        "1211b57f-f1b3-4279-a4a9-bdc43593603b",
-            "space_guid":        "space-guid-here",
             "parameters":        {
                 "parameter1": "value"
             }
