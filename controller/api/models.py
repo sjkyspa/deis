@@ -166,142 +166,6 @@ class UuidAuditedModel(AuditedModel):
 
 
 @python_2_unicode_compatible
-class ServiceBinding(UuidAuditedModel):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    service_instance_id = models.ForeignKey("ServiceInstance")
-    app_id = models.ForeignKey("App")
-    credentials = JSONField(default={}, blank=True)
-    # parameters = models.TextField(blank=False, null=False, unique=True)
-
-    def __str__(self):
-        return self.uuid
-
-    def create(self, *args, **kwargs):
-        binding_id = str(uuid4())
-        url = "http://{}:{}@{}/v2/service_instances/{}/service_bindings/{}"\
-            .format(self.service_instance_id.service_id.broker.username,
-                    self.service_instance_id.service_id.broker.password,
-                    self.service_instance_id.service_id.broker.url,
-                    self.service_instance_id.uuid,
-                    binding_id)
-        response = broker_client.binding(url, json.dumps(kwargs))
-        if response.status_code == 200 or response.status_code == 201:
-            self.credentials = response.json()
-            return super(ServiceBinding, self).save(**kwargs)
-        else:
-            print 'binding failed'
-            return
-
-
-@python_2_unicode_compatible
-class ServiceInstance(UuidAuditedModel):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    # FIXME change field name
-    service_id = models.ForeignKey("BrokerService")
-    plan_id = models.ForeignKey("ServicePlan")
-    organization_guid = models.TextField(blank=False, null=False)
-    space_guid = models.TextField(blank=False, null=False)
-    dashboard_url = models.TextField(blank=True, null=True)
-    # parameters = models.TextField(blank=False, null=False, unique=True)
-
-    def __str__(self):
-        return self.uuid
-
-    def create(self, *args, **kwargs):
-        instance_id = str(uuid4())
-        url = "http://{}:{}@{}/v2/service_instances/{}".format(self.service_id.broker.username,
-                                                               self.service_id.broker.password,
-                                                               self.service_id.broker.url,
-                                                               instance_id)
-        # request template
-        # body = {
-        #     "organization_guid": "org-guid-here",
-        #     "plan_id":           "plan-guid-here",
-        #     "service_id":        "service-guid-here",
-        #     "space_guid":        "space-guid-here",
-        #     "parameters":        {
-        #         "parameter1": 1,
-        #         "parameter2": "value"
-        #     }
-        # }
-        response = broker_client.provision(url, json.dumps(kwargs))
-        # FIXME should handle 202
-        if response.status_code == 201:
-            data = response.json()
-            self.uuid = instance_id
-            self.dashboard_url = data['dashboard_url']
-            return super(ServiceInstance, self).save(**kwargs)
-        else:
-            print 'create broker failed'
-            return
-
-
-@python_2_unicode_compatible
-class ServicePlan(UuidAuditedModel):
-    service = models.ForeignKey("BrokerService", related_name="plans")
-    id = models.TextField(blank=False, null=False)
-    name = models.TextField(blank=False, null=False)
-    description = models.TextField(blank=True, null=True)
-    free = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.uuid
-
-
-@python_2_unicode_compatible
-class BrokerService(UuidAuditedModel):
-    broker = models.ForeignKey("Broker")
-    # id = models.TextField(blank=False, null=False, unique=True)
-    name = models.TextField(blank=False, null=False)
-    description = models.TextField(blank=True, null=True)
-    bindable = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.uuid
-
-
-@python_2_unicode_compatible
-class Broker(UuidAuditedModel):
-    """
-     Broker used to provide add-on services
-     """
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    name = models.TextField(blank=False, null=False)
-    url = models.TextField(blank=False, null=False, unique=True)
-    username = models.TextField(blank=True, null=True)
-    password = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.uuid
-
-    def create(self, *args, **kwargs):
-        url = "http://{}:{}@{}/v2/catalog".format(self.username,
-                                                  self.password,
-                                                  self.url)
-        response = broker_client.catalog(url)
-        if response.status_code == 200:
-            result = response.json()
-            for service in result['services']:
-                config = BrokerService.objects.create(broker=self,
-                                                      uuid=service['id'],
-                                                      name=service['name'],
-                                                      description=service['description'])
-                for plan in service['plans']:
-                    ServicePlan.objects.create(service=config,
-                                               uuid=plan['id'],
-                                               **plan)
-            return super(Broker, self).save(**kwargs)
-        else:
-            print 'create broker failed'
-
-    def delete(self, *args, **kwargs):
-        """Delete this application including all containers"""
-
-        super(Broker, self).delete(*args, **kwargs)
-
-
-@python_2_unicode_compatible
 class App(UuidAuditedModel):
     """
     Application used to service requests on behalf of end-users
@@ -1194,6 +1058,142 @@ class Key(UuidAuditedModel):
     def save(self, *args, **kwargs):
         self.fingerprint = fingerprint(self.public)
         return super(Key, self).save(*args, **kwargs)
+
+
+@python_2_unicode_compatible
+class ServiceBinding(UuidAuditedModel):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    service_instance_id = models.ForeignKey("ServiceInstance")
+    app_id = models.ForeignKey("App")
+    credentials = JSONField(default={}, blank=True)
+    # parameters = models.TextField(blank=False, null=False, unique=True)
+
+    def __str__(self):
+        return self.uuid
+
+    def create(self, *args, **kwargs):
+        binding_id = str(uuid4())
+        url = "http://{}:{}@{}/v2/service_instances/{}/service_bindings/{}".format(
+            self.service_instance_id.service_id.broker.username,
+            self.service_instance_id.service_id.broker.password,
+            self.service_instance_id.service_id.broker.url,
+            self.service_instance_id.uuid,
+            binding_id)
+        response = broker_client.binding(url, json.dumps(kwargs))
+        if response.status_code == 200 or response.status_code == 201:
+            self.credentials = response.json()
+            return super(ServiceBinding, self).save(**kwargs)
+        else:
+            print 'binding failed'
+            return
+
+
+@python_2_unicode_compatible
+class ServiceInstance(UuidAuditedModel):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    # FIXME change field name
+    service_id = models.ForeignKey("BrokerService")
+    plan_id = models.ForeignKey("ServicePlan")
+    organization_guid = models.TextField(blank=False, null=False)
+    space_guid = models.TextField(blank=False, null=False)
+    dashboard_url = models.TextField(blank=True, null=True)
+    # parameters = models.TextField(blank=False, null=False, unique=True)
+
+    def __str__(self):
+        return self.uuid
+
+    def create(self, *args, **kwargs):
+        instance_id = str(uuid4())
+        url = "http://{}:{}@{}/v2/service_instances/{}".format(self.service_id.broker.username,
+                                                               self.service_id.broker.password,
+                                                               self.service_id.broker.url,
+                                                               instance_id)
+        # request template
+        # body = {
+        #     "organization_guid": "org-guid-here",
+        #     "plan_id":           "plan-guid-here",
+        #     "service_id":        "service-guid-here",
+        #     "space_guid":        "space-guid-here",
+        #     "parameters":        {
+        #         "parameter1": 1,
+        #         "parameter2": "value"
+        #     }
+        # }
+        response = broker_client.provision(url, json.dumps(kwargs))
+        # FIXME should handle 202
+        if response.status_code == 201:
+            data = response.json()
+            self.uuid = instance_id
+            self.dashboard_url = data['dashboard_url']
+            return super(ServiceInstance, self).save(**kwargs)
+        else:
+            print 'create broker failed'
+            return
+
+
+@python_2_unicode_compatible
+class ServicePlan(UuidAuditedModel):
+    service = models.ForeignKey("BrokerService", related_name="plans")
+    id = models.TextField(blank=False, null=False)
+    name = models.TextField(blank=False, null=False)
+    description = models.TextField(blank=True, null=True)
+    free = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.uuid
+
+
+@python_2_unicode_compatible
+class BrokerService(UuidAuditedModel):
+    broker = models.ForeignKey("Broker")
+    # id = models.TextField(blank=False, null=False, unique=True)
+    name = models.TextField(blank=False, null=False)
+    description = models.TextField(blank=True, null=True)
+    bindable = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.uuid
+
+
+@python_2_unicode_compatible
+class Broker(UuidAuditedModel):
+    """
+     Broker used to provide add-on services
+     """
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    name = models.TextField(blank=False, null=False)
+    url = models.TextField(blank=False, null=False, unique=True)
+    username = models.TextField(blank=True, null=True)
+    password = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.uuid
+
+    def create(self, *args, **kwargs):
+        url = "http://{}:{}@{}/v2/catalog".format(self.username,
+                                                  self.password,
+                                                  self.url)
+        response = broker_client.catalog(url)
+        if response.status_code == 200:
+            result = response.json()
+            for service in result['services']:
+                config = BrokerService.objects.create(broker=self,
+                                                      uuid=service['id'],
+                                                      name=service['name'],
+                                                      description=service['description'])
+                for plan in service['plans']:
+                    ServicePlan.objects.create(service=config,
+                                               uuid=plan['id'],
+                                               **plan)
+            return super(Broker, self).save(**kwargs)
+        else:
+            print 'create broker failed'
+
+    def delete(self, *args, **kwargs):
+        """Delete this application including all containers"""
+
+        super(Broker, self).delete(*args, **kwargs)
 
 
 # define update/delete callbacks for synchronizing

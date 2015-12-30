@@ -261,58 +261,6 @@ class ContainerSerializer(ModelSerializer):
         return "v{}".format(obj.release.version)
 
 
-class ServiceBindingSerializer(ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
-    fingerprint = serializers.CharField(read_only=True)
-    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
-    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
-
-    class Meta:
-        """Metadata options for a KeySerializer."""
-        model = models.ServiceBinding
-
-
-class ServiceInstanceSerializer(ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
-    fingerprint = serializers.CharField(read_only=True)
-    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
-    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
-
-    class Meta:
-        """Metadata options for a KeySerializer."""
-        model = models.ServiceInstance
-
-
-class ServicePlanSerializer(ModelSerializer):
-    fingerprint = serializers.CharField(read_only=True)
-
-    class Meta:
-        """Metadata options for a KeySerializer."""
-        model = models.ServicePlan
-
-
-class BrokerServiceSerializer(ModelSerializer):
-    plans = ServicePlanSerializer(many=True, read_only=True)
-
-    class Meta:
-        """Metadata options for a KeySerializer."""
-        model = models.BrokerService
-        fields = ['uuid', 'name', 'description', 'bindable', "plans"]
-
-
-class BrokerSerializer(ModelSerializer):
-    """Serialize a :class:`~api.models.Key` model."""
-
-    owner = serializers.ReadOnlyField(source='owner.username')
-    fingerprint = serializers.CharField(read_only=True)
-    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
-    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
-
-    class Meta:
-        """Metadata options for a KeySerializer."""
-        model = models.Broker
-
-
 class KeySerializer(ModelSerializer):
     """Serialize a :class:`~api.models.Key` model."""
 
@@ -395,3 +343,55 @@ class PushSerializer(ModelSerializer):
         model = models.Push
         fields = ['uuid', 'owner', 'app', 'sha', 'fingerprint', 'receive_user', 'receive_repo',
                   'ssh_connection', 'ssh_original_command', 'created', 'updated']
+
+
+class ServiceBindingSerializer(ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    fingerprint = serializers.CharField(read_only=True)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+
+    class Meta:
+        """Metadata options for a KeySerializer."""
+        model = models.ServiceBinding
+
+
+class ServiceInstanceSerializer(ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    fingerprint = serializers.CharField(read_only=True)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+
+    class Meta:
+        """Metadata options for a KeySerializer."""
+        model = models.ServiceInstance
+
+
+class ServicePlanSerializer(ModelSerializer):
+    fingerprint = serializers.CharField(read_only=True)
+
+    class Meta:
+        """Metadata options for a KeySerializer."""
+        model = models.ServicePlan
+
+
+class BrokerServiceSerializer(ModelSerializer):
+    plans = ServicePlanSerializer(many=True, read_only=True)
+
+    class Meta:
+        """Metadata options for a KeySerializer."""
+        model = models.BrokerService
+        fields = ['uuid', 'name', 'description', 'bindable', "plans"]
+
+
+class BrokerSerializer(ModelSerializer):
+    """Serialize a :class:`~api.models.Key` model."""
+
+    owner = serializers.ReadOnlyField(source='owner.username')
+    fingerprint = serializers.CharField(read_only=True)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+
+    class Meta:
+        """Metadata options for a KeySerializer."""
+        model = models.Broker

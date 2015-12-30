@@ -326,45 +326,6 @@ class KeyViewSet(BaseDeisViewSet):
     serializer_class = serializers.KeySerializer
 
 
-class ServiceInstanceViewSet(BaseDeisViewSet):
-    model = models.ServiceInstance
-    serializer_class = serializers.ServiceInstanceSerializer
-    permission_classes = [IsAuthenticated]
-
-    def post_save(self, service_instance):
-        service_instance.create()
-
-
-class ServiceBindingViewSet(BaseDeisViewSet):
-    model = models.ServiceBinding
-    serializer_class = serializers.ServiceBindingSerializer
-    permission_classes = [IsAuthenticated]
-
-    def post_save(self, service_binding):
-        service_binding.create()
-
-
-class BrokerServiceViewSet(viewsets.ModelViewSet):
-    lookup_field = 'uuid'
-    model = models.BrokerService
-    serializer_class = serializers.BrokerServiceSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self, *args, **kwargs):
-        return self.model.objects.all(*args, **kwargs)
-
-
-class BrokerViewSet(BaseDeisViewSet):
-    """A viewset for interacting with Broker objects."""
-    lookup_field = 'uuid'
-    model = models.Broker
-    serializer_class = serializers.BrokerSerializer
-    permission_classes = [IsAuthenticated]
-
-    def post_save(self, broker):
-        broker.create()
-
-
 class ReleaseViewSet(AppResourceViewSet):
     """A viewset for interacting with Release objects."""
     model = models.Release
@@ -530,3 +491,42 @@ class UserView(BaseDeisViewSet):
 
     def get_queryset(self):
         return self.model.objects.exclude(username='AnonymousUser')
+
+
+class ServiceInstanceViewSet(BaseDeisViewSet):
+    model = models.ServiceInstance
+    serializer_class = serializers.ServiceInstanceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post_save(self, service_instance):
+        service_instance.create()
+
+
+class ServiceBindingViewSet(BaseDeisViewSet):
+    model = models.ServiceBinding
+    serializer_class = serializers.ServiceBindingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post_save(self, service_binding):
+        service_binding.create()
+
+
+class BrokerServiceViewSet(viewsets.ModelViewSet):
+    lookup_field = 'uuid'
+    model = models.BrokerService
+    serializer_class = serializers.BrokerServiceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self, *args, **kwargs):
+        return self.model.objects.all(*args, **kwargs)
+
+
+class BrokerViewSet(BaseDeisViewSet):
+    """A viewset for interacting with Broker objects."""
+    lookup_field = 'uuid'
+    model = models.Broker
+    serializer_class = serializers.BrokerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post_save(self, broker):
+        broker.create()
