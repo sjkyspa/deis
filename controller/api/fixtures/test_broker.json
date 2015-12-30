@@ -65,6 +65,7 @@
             "plan_id": "1211b57f-f1b3-4279-a4a9-bdc435936031",
             "organization_guid": "",
             "space_guid": "",
+            "name": "service-instance-from-mysql-for-autotest",
             "updated": "2013-11-25T22:09:36.726Z",
             "created": "2013-11-25T22:09:36.726Z",
             "owner": 8

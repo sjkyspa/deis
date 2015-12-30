@@ -1092,6 +1092,7 @@ class ServiceBinding(UuidAuditedModel):
 class ServiceInstance(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     # FIXME change field name
+    name = models.TextField(blank=False, null=False, unique=True)
     service_id = models.ForeignKey("BrokerService", null=True)
     plan_id = models.ForeignKey("ServicePlan")
     organization_guid = models.TextField(blank=True, null=True)
@@ -1104,13 +1105,14 @@ class ServiceInstance(UuidAuditedModel):
 
     def create(self, *args, **kwargs):
         self.service_id = self.plan_id.service
+        self.organization_guid = str(uuid4())
+        self.space_guid = str(uuid4())
         instance_id = str(uuid4())
+
         url = "http://{}:{}@{}/v2/service_instances/{}".format(self.service_id.broker.username,
                                                                self.service_id.broker.password,
                                                                self.service_id.broker.url,
                                                                instance_id)
-        self.organization_guid = str(uuid4())
-        self.space_guid = str(uuid4())
         # TODO will supply additional parameters for broker api
         body = {
             "organization_guid": self.organization_guid,

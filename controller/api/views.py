@@ -502,9 +502,6 @@ class ServiceInstanceViewSet(BaseDeisViewSet):
     def get_queryset(self, *args, **kwargs):
         return self.model.objects.all(*args, **kwargs)
 
-    def post_save(self, service_instance):
-        service_instance.create()
-
     def destroy(self, request, **kwargs):
         calling_obj = self.get_object()
         target_obj = calling_obj
