@@ -1185,7 +1185,8 @@ class Broker(UuidAuditedModel):
                 for plan in service['plans']:
                     ServicePlan.objects.create(service=config,
                                                uuid=plan['id'],
-                                               **plan)
+                                               name=plan['name'],
+                                               description=plan['description'])
             return super(Broker, self).save(**kwargs)
         else:
             print 'create broker failed'
