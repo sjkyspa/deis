@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/deis/deis/client/controller/api"
 	"github.com/deis/deis/client/controller/client"
 )
@@ -23,13 +24,12 @@ func List(c *client.Client, results int) ([]api.ServiceOffering, int, error) {
 }
 
 // New create service on a Deis controller.
-func New(c *client.Client, serviceInstanceName, serviceName, planName string) (api.ServiceInstance, error) {
+func New(c *client.Client, serviceInstanceName, planID string) (api.ServiceInstance, error) {
 	body := []byte{}
 	var err error
 	req := api.ServiceInstanceCreateRequest{
-		Name:        serviceInstanceName,
-		ServiceName: serviceName,
-		PlanName:    planName,
+		Name:   serviceInstanceName,
+		PlanID: planID,
 	}
 	body, err = json.Marshal(req)
 
@@ -49,4 +49,21 @@ func New(c *client.Client, serviceInstanceName, serviceName, planName string) (a
 	}
 
 	return serviceInstance, nil
+}
+
+// FindByName find service by the service name
+func FindByName(c *client.Client, serviceName string) (api.ServiceOffering, error) {
+
+	res, err := c.BasicRequest("GET", fmt.Sprintf("/v1/services?name=%s", serviceName), nil)
+
+	if err != nil {
+		return api.ServiceOffering{}, err
+	}
+
+	var service api.ServiceOffering
+	if err = json.Unmarshal([]byte(res), &service); err != nil {
+		return api.ServiceOffering{}, err
+	}
+
+	return service, nil
 }

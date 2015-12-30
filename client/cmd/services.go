@@ -29,20 +29,24 @@ func ServiceList(results int) error {
 	fmt.Printf("=== Apps%s", limitCount(len(services), count))
 
 	for _, app := range services {
-		fmt.Println(app.ID)
+		fmt.Println(app.UUID)
 	}
 	return nil
 }
 
 // ServiceCreate creates an service.
-func ServiceCreate(serviceName, planName, serviceInstanceName string) error {
-	c, err := client.New()
-
+func ServiceCreate(c *client.Client, serviceName, planName, serviceInstanceName string) error {
+	service, err := services.FindByName(c, serviceName)
 	if err != nil {
 		return err
 	}
 
-	serviceInstance, err := services.New(c, serviceName, planName, serviceInstanceName)
+	plan, err := service.FindPlan(planName)
+	if err != nil {
+
+	}
+
+	serviceInstance, err := services.New(c, serviceInstanceName, plan.UUID)
 	if err != nil {
 		return err
 	}

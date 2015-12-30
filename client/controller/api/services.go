@@ -1,8 +1,11 @@
 package api
 
+import "fmt"
+
 // ServiceOfferingFields is the definition of the service meta.
 type ServiceOfferingFields struct {
-	ID               string `json:"id"`
+	UUID             string `json:"uuid"`
+	NAME             string `json:"name"`
 	BrokerID         string `json:"broker_id"`
 	Label            string `json:"label"`
 	Provider         string `json:"provider"`
@@ -17,8 +20,20 @@ type ServiceOffering struct {
 	Plans []ServicePlanFields `json:"plans"`
 }
 
+// FindPlan find plan in the service
+func (so *ServiceOffering) FindPlan(planName string) (ServicePlanFields, error) {
+	for _, plan := range so.Plans {
+		if planName == plan.Name {
+			return plan, nil
+		}
+	}
+
+	return ServicePlanFields{}, fmt.Errorf("%s is not a valid plan for serivce %s", planName, so.ServiceOfferingFields.NAME)
+}
+
 // ServicePlanFields is the definition of the service plan meta
 type ServicePlanFields struct {
+	UUID              string `json:"uuid"`
 	Name              string `json:"name"`
 	Free              bool   `json:"free"`
 	Public            bool   `json:"public"`
@@ -35,9 +50,8 @@ type ServicePlan struct {
 
 // ServiceInstanceCreateRequest is the request to create service instance
 type ServiceInstanceCreateRequest struct {
-	Name        string `json:"name"`
-	ServiceName string `json:"service_name"`
-	PlanName    string `json:"plan_name"`
+	Name   string `json:"name"`
+	PlanID string `json:"plan_id"`
 }
 
 // ServiceInstanceFields is the definition of the service instance

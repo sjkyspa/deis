@@ -22,7 +22,7 @@ const servicesFixture string = `
     "previous": null,
     "results": [
         {
-            "id": "id",
+            "uuid": "id",
             "label": "label",
 			"plans": [
 				{
@@ -49,7 +49,7 @@ func TestMarketplace(t *testing.T) {
 	expected := []api.ServiceOffering{
 		api.ServiceOffering{
 			ServiceOfferingFields: api.ServiceOfferingFields{
-				ID:    "id",
+				UUID:  "id",
 				Label: "label",
 			},
 			Plans: []api.ServicePlanFields{

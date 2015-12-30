@@ -2,6 +2,7 @@ package parser
 
 import (
 	"github.com/deis/deis/client/cmd"
+	"github.com/deis/deis/client/controller/client"
 	docopt "github.com/docopt/docopt-go"
 )
 
@@ -95,7 +96,13 @@ Options:
 	planName := safeGetValue(args, "<plan-name>")
 	serviceInstanceName := safeGetValue(args, "<service-instance-name>")
 
-	return cmd.ServiceCreate(serviceName, planName, serviceInstanceName)
+	c, err := client.New()
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.ServiceCreate(c, serviceName, planName, serviceInstanceName)
 }
 
 func serviceUpdate(argv []string) error {

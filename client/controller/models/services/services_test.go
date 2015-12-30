@@ -20,7 +20,7 @@ const servicesFixture string = `
     "previous": null,
     "results": [
         {
-            "id": "id",
+            "uuid": "id",
             "label": "label",
 			"plans": [
 				{
@@ -88,7 +88,7 @@ func TestListService(t *testing.T) {
 	expected := []api.ServiceOffering{
 		api.ServiceOffering{
 			ServiceOfferingFields: api.ServiceOfferingFields{
-				ID:    "id",
+				UUID:  "id",
 				Label: "label",
 			},
 			Plans: []api.ServicePlanFields{
@@ -122,7 +122,7 @@ func TestCreateService(t *testing.T) {
 
 	client := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	service, err := New(&client, "service_instance_name", "service_name", "plan_name")
+	service, err := New(&client, "instance_name", "service_plan_uuid")
 
 	Expect(err).To(BeNil())
 
