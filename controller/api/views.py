@@ -13,9 +13,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.authtoken.models import Token
-
-from api import authentication, models, permissions, serializers, viewsets
 import requests
+
+from api import authentication, models, permissions, serializers, viewsets, broker_client
 
 
 class UserRegistrationViewSet(GenericViewSet,
@@ -494,12 +494,53 @@ class UserView(BaseDeisViewSet):
 
 
 class ServiceInstanceViewSet(BaseDeisViewSet):
+    lookup_field = 'uuid'
     model = models.ServiceInstance
     serializer_class = serializers.ServiceInstanceSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self, *args, **kwargs):
+        return self.model.objects.all(*args, **kwargs)
+
     def post_save(self, service_instance):
         service_instance.create()
+
+    def destroy(self, request, **kwargs):
+        calling_obj = self.get_object()
+        target_obj = calling_obj
+        base_url = "http://{}:{}@{}".format(calling_obj.service_id.broker.username,
+                                            calling_obj.service_id.broker.password,
+                                            calling_obj.service_id.broker.url)
+        deprovision_url = base_url+"/v2/service_instances/{}".format(calling_obj.uuid)
+        polling_url = deprovision_url+"/last_operation"
+
+        response = broker_client.deprovisioning(deprovision_url)
+        print response.status_code
+        if response.status_code != 202:
+            return Response({'detail': str(response.json())}, status=response.status_code)
+
+        is_deprovision_finished = False
+        response_code = 200
+        response_body = ""
+        while not is_deprovision_finished:
+            try:
+                response = broker_client.polling_last_operation(polling_url)
+                polling_response_body = response.json()
+                if response.status_code != requests.codes.OK:
+                    is_deprovision_finished = True
+                    response_code = response.status_code
+                    response_body = response.body
+                elif polling_response_body['state'] != "in progress":
+                    is_deprovision_finished = True
+                    if polling_response_body['state'] == "failed":
+                        response_code = 500
+                        response_body = polling_response_body['description']
+            except RuntimeError as e:
+                return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        if response_code == 200:
+            target_obj.delete()
+        return Response({"detail": response_body}, status=response_code)
 
 
 class ServiceBindingViewSet(BaseDeisViewSet):

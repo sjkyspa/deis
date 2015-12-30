@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from api import broker_client
-from . import mock_broker_stub, mock_provision, mock_binding
+from . import mock_broker_stub
 
 
 class TestBrokers(TestCase):
@@ -62,35 +62,3 @@ class TestBrokers(TestCase):
         response = self.client.delete(url,
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
-
-    def test_service_instance(self):
-        broker_client.provision = mock_provision
-        url = '/v1/service_instances'
-        body = {
-            "organization_guid": "org-guid-here",
-            "plan_id":           "1211b57f-f1b3-4279-a4a9-bdc435936031",
-            "service_id":        "1211b57f-f1b3-4279-a4a9-bdc43593603b",
-            "space_guid":        "space-guid-here",
-            "parameters":        {
-                "parameter1": "value"
-            }
-        }
-        response = self.client.post(url, json.dumps(body),
-                                    content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 201)
-
-    def test_service_binding(self):
-        broker_client.binding = mock_binding
-        url = '/v1/service_bindings'
-        body = {
-            "service_instance_id": "2909e1b9-1e70-42e6-a6e1-67d2fa81ee71",
-            "app_id": "5a09a1e0-a27e-4839-928b-449310ed90e0",
-            "parameters": {
-                "the_service_broker": "wants this object"
-            }
-        }
-        response = self.client.post(url, json.dumps(body),
-                                    content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 201)

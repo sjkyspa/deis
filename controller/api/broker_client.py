@@ -1,4 +1,3 @@
-__author__ = 'hjliu'
 import requests
 
 
@@ -14,4 +13,14 @@ def provision(url, body):
 
 def binding(url, body):
     response = requests.post(url, data=body)
+    return response
+
+
+def deprovisioning(url):
+    response = requests.delete(url)
+    return response
+
+
+def polling_last_operation(url):
+    response = requests.get(url)
     return response

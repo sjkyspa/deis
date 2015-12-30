@@ -104,6 +104,40 @@ def mock_binding(url, body):
     })
     return resp
 
+
+def mock_deprovision_200(url):
+    resp = requests.Response()
+    resp.status_code = 200
+    return resp
+
+
+def mock_deprovision_202(url):
+    resp = requests.Response()
+    resp.status_code = 202
+    return resp
+
+
+def mock_polling_last_operation_failed(url):
+    # http://username:password@broker-url/v2/service_instances/:instance_id/last_operation
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content = json.dumps({
+        "state": "failed",
+        "description": "Destroy service failed."
+    })
+    return resp
+
+
+def mock_polling_last_operation_succeeded(url):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content = json.dumps({
+        "state": "succeeded",
+        "description": "Destroy service succeeded."
+    })
+    return resp
+
+
 from .test_api_middleware import *  # noqa
 from .test_app import *  # noqa
 from .test_auth import *  # noqa
@@ -121,3 +155,5 @@ from .test_scheduler import *  # noqa
 from .test_users import *  # noqa
 from .test_brokers import *  # noqa
 from .test_service import *  # noqa
+from .test_service_binding import *  # noqa
+from .test_service_instance import *  # noqa

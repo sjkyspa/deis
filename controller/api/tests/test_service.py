@@ -42,8 +42,6 @@ class TestService(TestCase):
         plans = service['plans']
         self.assertEqual(len(plans), 2)
         self.assertEqual(plans[0]['name'], 'small')
-        self.assertEqual(body['results'][0]['name'], 'mysql')
-        self.assertEqual(body['results'][0]['bindable'], True)
 
         uuid = service['uuid']
         url = '/v1/services/{uuid}'.format(**locals())

@@ -111,7 +111,7 @@ urlpatterns = patterns(
     url(r'^services/?',
         views.BrokerServiceViewSet.as_view({'get': 'list'})),
     # service_instances
-    url(r'^service_instances/(?P<id>.+)/?',
+    url(r'^service_instances/(?P<uuid>.+)/?',
         views.ServiceInstanceViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^service_instances/?',
         views.ServiceInstanceViewSet.as_view({'get': 'list', 'post': 'create'})),
