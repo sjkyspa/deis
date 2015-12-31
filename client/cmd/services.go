@@ -44,7 +44,7 @@ func ServiceCreate(c *client.Client, serviceName, planName, serviceInstanceName 
 
 	plan, err := service.FindPlan(planName)
 	if err != nil {
-
+		return err
 	}
 
 	serviceInstance, err := services.New(c, serviceInstanceName, plan.ID)

@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"encoding/json"
 	"github.com/deis/deis/client/controller/client"
 	"github.com/deis/deis/version"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -85,9 +87,27 @@ const serviceBindingsFixture string = `
 func (c *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("DEIS_API_VERSION", version.APIVersion)
 	if req.URL.Path == "/v1/service_instances" && req.Method == "POST" {
-		res.WriteHeader(http.StatusCreated)
-		res.Header().Add("Location", "/v1/service_instances/id")
-		res.Write([]byte(serviceInstanceCreated))
+		var reqJSON map[string]interface{}
+		data, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			res.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		err = json.Unmarshal(data, &reqJSON)
+		if err != nil {
+			res.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if reqJSON["name"].(string) == "service_instance_name" {
+			res.WriteHeader(http.StatusCreated)
+			res.Header().Add("Location", "/v1/service_instances/id")
+			res.Write([]byte(serviceInstanceCreated))
+			return
+		}
+
+		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -141,6 +161,69 @@ func TestCreateServiceSuccess(t *testing.T) {
 	err = ServiceCreate(&c, "service_name", "plan_name", "service_instance_name")
 
 	Expect(err).To(BeNil())
+}
+
+func TestCreateServiceFailPlanNotFound(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceCreate(&c, "service_name", "not_existed_plan", "service_instance_name")
+
+	Expect(err).NotTo(BeNil())
+}
+
+func TestCreateServiceFailServiceNameNotFound(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceCreate(&c, "not_existed_service_name", "plan_name", "service_instance_name")
+
+	Expect(err).NotTo(BeNil())
+}
+
+func TestCreateServiceFailDuplicatedServiceInstanceName(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceCreate(&c, "service_name", "plan_name", "duplicated_service_instance_name")
+
+	Expect(err).NotTo(BeNil())
 }
 
 func TestBindServiceSuccess(t *testing.T) {
