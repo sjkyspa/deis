@@ -49,7 +49,7 @@ func (svr *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	if req.URL.Path == "/v1/service-instances/" && req.Method == "POST" {
+	if req.URL.Path == "/v1/service_instances" && req.Method == "POST" {
 		res.WriteHeader(http.StatusCreated)
 		res.Header().Add("Location", "/v1/service-instances/id")
 		res.Write([]byte(serviceInstanceCreated))

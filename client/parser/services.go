@@ -135,7 +135,12 @@ Options:
 	appName := safeGetValue(args, "<app-name>")
 	serviceInstanceName := safeGetValue(args, "<service-instance-name>")
 
-	return cmd.ServiceBind(appName, serviceInstanceName)
+	c, err := client.New()
+
+	if err != nil {
+		return err
+	}
+	return cmd.ServiceBind(c, appName, serviceInstanceName)
 }
 
 func serviceUnbind(argv []string) error {
