@@ -184,3 +184,45 @@ func TestUnbindServiceSuccess(t *testing.T) {
 
 	Expect(err).To(BeNil())
 }
+
+func TestUnbindServiceFailNoAppFound(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceUnbind(&c, "not_exists_app_id", "service_instance_name")
+
+	Expect(err.Error()).To(MatchRegexp("Can Not find service by service instance.*"))
+}
+
+func TestUnbindServiceFailNoServiceInstanceNameFound(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceUnbind(&c, "app_id", "not_exists_service_instance_name")
+
+	Expect(err.Error()).To(MatchRegexp("Can Not find service by service instance.*"))
+}

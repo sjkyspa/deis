@@ -82,7 +82,7 @@ func findServiceBinding(c *client.Client, serviceInstanceID, appID string) (api.
 
 		next := res["next"]
 		if next == nil {
-			return api.ServiceBindingFields{}, fmt.Errorf("Not find service by service instance: %s and appID: %s", serviceInstanceID, appID)
+			return api.ServiceBindingFields{}, fmt.Errorf("Can Not find service by service instance: %s and appID: %s", serviceInstanceID, appID)
 		}
 
 		return findServiceBindingInner(next.(string))
