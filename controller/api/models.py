@@ -1147,8 +1147,7 @@ class ServicePlan(UuidAuditedModel):
 @python_2_unicode_compatible
 class BrokerService(UuidAuditedModel):
     broker = models.ForeignKey("Broker")
-    # id = models.TextField(blank=False, null=False, unique=True)
-    name = models.TextField(blank=False, null=False)
+    name = models.TextField(blank=False, null=False, unique=True)
     description = models.TextField(blank=True, null=True)
     bindable = models.BooleanField(default=True)
 

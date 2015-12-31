@@ -55,7 +55,7 @@ def mock_broker_stub(url):
     resp._content = json.dumps({
         "services": [{
             "id": "1211b57f-f1b3-4279-a4a9-bdc43503603a",
-            "name": "mysql",
+            "name": "mysql Cluster",
             "description": "A MySQL-compatible relational database",
             "bindable": "true",
             "plans": [{
