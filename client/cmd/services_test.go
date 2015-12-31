@@ -164,6 +164,27 @@ func TestBindServiceSuccess(t *testing.T) {
 	Expect(err).To(BeNil())
 }
 
+func TestBindServiceFailServiceInstanceNotFound(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceBind(&c, "app_id", "not_existed_service_instance_name")
+
+	Expect(err).NotTo(BeNil())
+}
+
 func TestUnbindServiceSuccess(t *testing.T) {
 	RegisterTestingT(t)
 	t.Parallel()
