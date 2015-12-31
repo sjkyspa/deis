@@ -50,7 +50,7 @@ const servicesFixture string = `
             "label": "label",
 			"plans": [
 				{
-					"name": "small",
+					"name": "plan_name",
 					"uuid": "uuid",
 					"free": true,
 					"description": "desc"

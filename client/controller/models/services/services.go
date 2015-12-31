@@ -60,10 +60,34 @@ func FindByName(c *client.Client, serviceName string) (api.ServiceOffering, erro
 		return api.ServiceOffering{}, err
 	}
 
-	var service api.ServiceOffering
-	if err = json.Unmarshal([]byte(res), &service); err != nil {
+	var services []api.ServiceOffering
+	resBody, count, err := extractResult(res)
+	if err != nil {
 		return api.ServiceOffering{}, err
 	}
 
-	return service, nil
+	if count > 1 || count <= 0 {
+		return api.ServiceOffering{}, fmt.Errorf("Can not find service by %s, place check the service name", serviceName)
+	}
+
+	if err = json.Unmarshal([]byte(resBody), &services); err != nil {
+		return api.ServiceOffering{}, err
+	}
+
+	return services[0], nil
+}
+
+func extractResult(body string) (string, int, error) {
+	res := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(body), &res); err != nil {
+		return "", -1, err
+	}
+
+	out, err := json.Marshal(res["results"].([]interface{}))
+
+	if err != nil {
+		return "", -1, err
+	}
+
+	return string(out), int(res["count"].(float64)), nil
 }
