@@ -9,7 +9,7 @@ import (
 
 // List lists services on a Deis controller.
 func List(c *client.Client, results int) ([]api.ServiceOffering, int, error) {
-	body, count, err := c.LimitedRequest("/v1/services/", results)
+	body, count, err := c.LimitedRequest("/v1/services", results)
 
 	if err != nil {
 		return []api.ServiceOffering{}, -1, err

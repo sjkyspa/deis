@@ -74,7 +74,13 @@ Options:
 		return err
 	}
 
-	return cmd.ServiceList(results)
+	c, err := client.New()
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.ServiceList(c, results)
 }
 
 func serviceCreate(argv []string) error {

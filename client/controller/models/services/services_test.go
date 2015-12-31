@@ -44,7 +44,7 @@ type fakeHTTPServer struct {
 
 func (svr *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("DEIS_API_VERSION", version.APIVersion)
-	if req.URL.Path == "/v1/services/" && req.Method == "GET" {
+	if req.URL.Path == "/v1/services" && req.Method == "GET" {
 		res.Write([]byte(servicesFixture))
 		return
 	}

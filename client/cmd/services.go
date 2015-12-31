@@ -7,16 +7,12 @@ import (
 	"github.com/deis/deis/client/controller/models/serviceinstance"
 	"github.com/deis/deis/client/controller/models/services"
 	"os"
+	"strings"
+	"text/tabwriter"
 )
 
 // ServiceList lists services
-func ServiceList(results int) error {
-	c, err := client.New()
-
-	if err != nil {
-		return err
-	}
-
+func ServiceList(c *client.Client, results int) error {
 	if results == defaultLimit {
 		results = c.ResponseLimit
 	}
@@ -27,11 +23,20 @@ func ServiceList(results int) error {
 		return err
 	}
 
-	fmt.Printf("=== Apps%s", limitCount(len(services), count))
+	fmt.Printf("=== Services%s", limitCount(len(services), count))
 
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 16, 8, 2, ' ', 0)
+	fmt.Fprintln(w, fmt.Sprintf("%s\t%s", "Service Name", "Service Plans"))
 	for _, service := range services {
-		fmt.Println(service.ID)
+		var plans []string
+		for _, plan := range service.Plans {
+			plans = append(plans, plan.Name)
+		}
+
+		fmt.Fprintln(w, fmt.Sprintf("%s\t%s", service.NAME, strings.Join(plans, ",")))
 	}
+	w.Flush()
 	return nil
 }
 

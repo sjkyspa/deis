@@ -48,10 +48,17 @@ const servicesFixture string = `
         {
             "uuid": "service_instance_id",
             "label": "label",
+            "name": "mysql",
 			"plans": [
 				{
 					"name": "plan_name",
 					"uuid": "uuid",
+					"free": true,
+					"description": "desc"
+				},
+				{
+					"name": "small_plan_name",
+					"uuid": "uuid2",
 					"free": true,
 					"description": "desc"
 				}
@@ -88,6 +95,12 @@ func (c *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("DEIS_API_VERSION", version.APIVersion)
 
 	if req.URL.Path == "/v1/services" && reflect.DeepEqual(req.URL.Query()["name"], []string{"service_name"}) && req.Method == "GET" {
+		res.WriteHeader(http.StatusOK)
+		res.Write([]byte(servicesFixture))
+		return
+	}
+
+	if req.URL.Path == "/v1/services" && req.Method == "GET" {
 		res.WriteHeader(http.StatusOK)
 		res.Write([]byte(servicesFixture))
 		return
@@ -146,6 +159,27 @@ func (c *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.WriteHeader(http.StatusNotFound)
+}
+
+func TestCreateServiceList(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceList(&c, 10)
+
+	Expect(err).To(BeNil())
 }
 
 func TestCreateServiceSuccess(t *testing.T) {
