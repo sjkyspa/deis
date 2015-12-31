@@ -1074,9 +1074,9 @@ class ServiceBinding(UuidAuditedModel):
     def create(self, *args, **kwargs):
         binding_id = str(uuid4())
         url = "http://{}:{}@{}/v2/service_instances/{}/service_bindings/{}".format(
-            self.service_instance_id.service_id.broker.username,
-            self.service_instance_id.service_id.broker.password,
-            self.service_instance_id.service_id.broker.url,
+            self.service_instance_id.service_uuid.broker.username,
+            self.service_instance_id.service_uuid.broker.password,
+            self.service_instance_id.service_uuid.broker.url,
             self.service_instance_id.uuid,
             binding_id)
         response = broker_client.binding(url, json.dumps(kwargs))
@@ -1093,10 +1093,10 @@ class ServiceInstance(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     # FIXME change field name
     name = models.TextField(blank=False, null=False, unique=True)
-    service_id = models.ForeignKey("BrokerService", null=True)
-    plan_id = models.ForeignKey("ServicePlan")
-    organization_guid = models.TextField(blank=True, null=True)
-    space_guid = models.TextField(blank=True, null=True)
+    service_uuid = models.ForeignKey("BrokerService", null=True)
+    plan_uuid = models.ForeignKey("ServicePlan")
+    organization_uuid = models.TextField(blank=True, null=True)
+    space_uuid = models.TextField(blank=True, null=True)
     dashboard_url = models.TextField(blank=True, null=True)
     # parameters = models.TextField(blank=False, null=False, unique=True)
 
@@ -1104,21 +1104,21 @@ class ServiceInstance(UuidAuditedModel):
         return self.uuid
 
     def create(self, *args, **kwargs):
-        self.service_id = self.plan_id.service
-        self.organization_guid = str(uuid4())
-        self.space_guid = str(uuid4())
+        self.service_uuid = self.plan_uuid.service
+        self.organization_uuid = str(uuid4())
+        self.space_uuid = str(uuid4())
         instance_id = str(uuid4())
 
-        url = "http://{}:{}@{}/v2/service_instances/{}".format(self.service_id.broker.username,
-                                                               self.service_id.broker.password,
-                                                               self.service_id.broker.url,
+        url = "http://{}:{}@{}/v2/service_instances/{}".format(self.service_uuid.broker.username,
+                                                               self.service_uuid.broker.password,
+                                                               self.service_uuid.broker.url,
                                                                instance_id)
         # TODO will supply additional parameters for broker api
         body = {
-            "organization_guid": self.organization_guid,
-            "plan_id":           self.plan_id,
-            "service_id":        self.service_id,
-            "space_guid":        self.space_guid
+            "organization_guid": self.organization_uuid,
+            "plan_id":           self.plan_uuid,
+            "service_id":        self.service_uuid,
+            "space_guid":        self.space_uuid
         }
         response = broker_client.provision(url, body)
         # FIXME should handle 202

@@ -34,7 +34,7 @@ class TestServiceInstances(TestCase):
         url = '/v1/service_instances'
         body = {
             "name": "instance-from-mysql-for-autotest",
-            "plan_id": "1211b57f-f1b3-4279-a4a9-bdc435936031",
+            "plan_uuid": "1211b57f-f1b3-4279-a4a9-bdc435936031",
             "parameters": {
                 "parameter1": "value"
             }
@@ -57,9 +57,9 @@ class TestServiceInstances(TestCase):
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertIn('uuid', response.data)
-        self.assertIn('service_id', response.data)
-        self.assertIn('plan_id', response.data)
-        self.assertIn('organization_guid', response.data)
+        self.assertIn('service_uuid', response.data)
+        self.assertIn('plan_uuid', response.data)
+        self.assertIn('organization_uuid', response.data)
         self.assertIn('dashboard_url', response.data)
 
     def test_service_instance_deletion(self):

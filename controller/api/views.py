@@ -505,9 +505,9 @@ class ServiceInstanceViewSet(BaseDeisViewSet):
     def destroy(self, request, **kwargs):
         calling_obj = self.get_object()
         target_obj = calling_obj
-        base_url = "http://{}:{}@{}".format(calling_obj.service_id.broker.username,
-                                            calling_obj.service_id.broker.password,
-                                            calling_obj.service_id.broker.url)
+        base_url = "http://{}:{}@{}".format(calling_obj.service_uuid.broker.username,
+                                            calling_obj.service_uuid.broker.password,
+                                            calling_obj.service_uuid.broker.url)
         deprovision_url = base_url+"/v2/service_instances/{}".format(calling_obj.uuid)
         polling_url = deprovision_url+"/last_operation"
 
