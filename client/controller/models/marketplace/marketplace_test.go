@@ -49,7 +49,7 @@ func TestMarketplace(t *testing.T) {
 	expected := []api.ServiceOffering{
 		api.ServiceOffering{
 			ServiceOfferingFields: api.ServiceOfferingFields{
-				UUID:  "id",
+				ID:    "id",
 				Label: "label",
 			},
 			Plans: []api.ServicePlanFields{

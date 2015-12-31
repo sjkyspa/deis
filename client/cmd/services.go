@@ -29,8 +29,8 @@ func ServiceList(results int) error {
 
 	fmt.Printf("=== Apps%s", limitCount(len(services), count))
 
-	for _, app := range services {
-		fmt.Println(app.UUID)
+	for _, service := range services {
+		fmt.Println(service.ID)
 	}
 	return nil
 }
@@ -47,7 +47,7 @@ func ServiceCreate(c *client.Client, serviceName, planName, serviceInstanceName 
 
 	}
 
-	serviceInstance, err := services.New(c, serviceInstanceName, plan.UUID)
+	serviceInstance, err := services.New(c, serviceInstanceName, plan.ID)
 	if err != nil {
 		return err
 	}

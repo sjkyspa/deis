@@ -4,7 +4,7 @@ import "fmt"
 
 // ServiceOfferingFields is the definition of the service meta.
 type ServiceOfferingFields struct {
-	UUID             string `json:"uuid"`
+	ID               string `json:"uuid"`
 	NAME             string `json:"name"`
 	BrokerID         string `json:"broker_id"`
 	Label            string `json:"label"`
@@ -33,7 +33,7 @@ func (so *ServiceOffering) FindPlan(planName string) (ServicePlanFields, error) 
 
 // ServicePlanFields is the definition of the service plan meta
 type ServicePlanFields struct {
-	UUID              string `json:"uuid"`
+	ID                string `json:"uuid"`
 	Name              string `json:"name"`
 	Free              bool   `json:"free"`
 	Public            bool   `json:"public"`
@@ -51,7 +51,7 @@ type ServicePlan struct {
 // ServiceInstanceCreateRequest is the request to create service instance
 type ServiceInstanceCreateRequest struct {
 	Name   string `json:"name"`
-	PlanID string `json:"plan_id"`
+	PlanID string `json:"plan_uuid"`
 }
 
 // ServiceInstanceFields is the definition of the service instance
