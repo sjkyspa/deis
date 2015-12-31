@@ -9,7 +9,8 @@ type ServiceBindingCreateRequest struct {
 
 // ServiceBindingFields is the definition of the service binding
 type ServiceBindingFields struct {
-	ID    string `json:"uuid"`
-	URL   string `json:"url"`
-	AppID string `json:"app_id"`
+	ID                string `json:"uuid"`
+	URL               string `json:"url"`
+	AppID             string `json:"app_id"`
+	ServiceInstanceID string `json:"service_instance_id"`
 }

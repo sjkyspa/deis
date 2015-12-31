@@ -22,6 +22,21 @@ const serviceInstanceCreated string = `
 	"plan_id": "mysql_small_plan_id"
 }`
 
+const serviceInstancesFixture string = `
+{
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+        	"uuid": "service_instance_id",
+            "plan_uuid": "service_plan_id",
+            "name": "mysql",
+            "type": "managed_service_instance"
+        }
+    ]
+}`
+
 const servicesFixture string = `
 {
     "count": 1,
@@ -29,7 +44,7 @@ const servicesFixture string = `
     "previous": null,
     "results": [
         {
-            "uuid": "uuid",
+            "uuid": "service_instance_id",
             "label": "label",
 			"plans": [
 				{
@@ -52,6 +67,21 @@ const serviceBindingFixture string = `
 }
 `
 
+const serviceBindingsFixture string = `
+{
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+        	"service_instance_id": "service_instance_id",
+        	"app_id": "app_id",
+   			"uuid": "uuid"
+        }
+    ]
+}
+`
+
 func (c *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("DEIS_API_VERSION", version.APIVersion)
 	if req.URL.Path == "/v1/service_instances" && req.Method == "POST" {
@@ -69,13 +99,23 @@ func (c *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	if req.URL.Path == "/v1/service_instances" && reflect.DeepEqual(req.URL.Query()["name"], []string{"service_instance_name"}) && req.Method == "GET" {
 		res.WriteHeader(http.StatusOK)
-		res.Write([]byte(servicesFixture))
+		res.Write([]byte(serviceInstancesFixture))
 		return
 	}
 
 	if req.URL.Path == "/v1/service_bindings" && req.Method == "POST" {
 		res.Header().Add("Location", "/v1/service_bindings/serivce_binding_id")
 		res.Write([]byte(serviceBindingFixture))
+		return
+	}
+
+	if req.URL.Path == "/v1/service_bindings" && req.Method == "GET" {
+		res.Write([]byte(serviceBindingsFixture))
+		return
+	}
+
+	if req.URL.Path == "/v1/service_bindings/uuid" && req.Method == "DELETE" {
+		res.Write([]byte(serviceBindingsFixture))
 		return
 	}
 
@@ -120,6 +160,27 @@ func TestBindServiceSuccess(t *testing.T) {
 	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
 	err = ServiceBind(&c, "app_name", "service_instance_name")
+
+	Expect(err).To(BeNil())
+}
+
+func TestUnbindServiceSuccess(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceUnbind(&c, "app_id", "service_instance_name")
 
 	Expect(err).To(BeNil())
 }

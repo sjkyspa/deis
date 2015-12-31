@@ -24,7 +24,7 @@ func List(c *client.Client, results int) ([]api.ServiceOffering, int, error) {
 }
 
 // New create service on a Deis controller.
-func New(c *client.Client, serviceInstanceName, planID string) (api.ServiceInstance, error) {
+func New(c *client.Client, serviceInstanceName, planID string) (api.ServiceInstanceRef, error) {
 	body := []byte{}
 	var err error
 	req := api.ServiceInstanceCreateRequest{
@@ -34,18 +34,18 @@ func New(c *client.Client, serviceInstanceName, planID string) (api.ServiceInsta
 	body, err = json.Marshal(req)
 
 	if err != nil {
-		return api.ServiceInstance{}, err
+		return api.ServiceInstanceRef{}, err
 	}
 
 	res, err := c.BasicRequest("POST", "/v1/service_instances", body)
 
 	if err != nil {
-		return api.ServiceInstance{}, err
+		return api.ServiceInstanceRef{}, err
 	}
 
-	var serviceInstance api.ServiceInstance
+	var serviceInstance api.ServiceInstanceRef
 	if err = json.Unmarshal([]byte(res), &serviceInstance); err != nil {
-		return api.ServiceInstance{}, err
+		return api.ServiceInstanceRef{}, err
 	}
 
 	return serviceInstance, nil

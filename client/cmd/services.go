@@ -91,6 +91,12 @@ func ServiceBind(c *client.Client, appName, serviceInstanceName string) error {
 }
 
 // ServiceUnbind unbind the service from the app
-func ServiceUnbind() error {
+func ServiceUnbind(c *client.Client, appID, serviceInstanceName string) error {
+	serviceInstance, err := serviceinstance.FindByName(c, serviceInstanceName)
+
+	err = servicebinding.Unbind(c, serviceInstance.ID, appID)
+	if err != nil {
+		return err
+	}
 	return nil
 }

@@ -8,23 +8,23 @@ import (
 )
 
 // FindByName find the service instance by the service name
-func FindByName(c *client.Client, name string) (api.ServiceInstance, error) {
+func FindByName(c *client.Client, name string) (api.ServiceInstanceRef, error) {
 	body, err := c.BasicRequest("GET", fmt.Sprintf("/v1/service_instances?name=%s", name), nil)
 	if err != nil {
-		return api.ServiceInstance{}, err
+		return api.ServiceInstanceRef{}, err
 	}
 
 	res, count, err := extractResult(body)
 
 	if count > 1 || count <= 0 {
-		return api.ServiceInstance{}, fmt.Errorf("The service is name is not unique or service not found")
+		return api.ServiceInstanceRef{}, fmt.Errorf("The service is name is not unique or service not found")
 	}
 
-	var serviceInstance []api.ServiceInstance
+	var serviceInstance []api.ServiceInstanceRef
 
 	err = json.Unmarshal([]byte(res), &serviceInstance)
 	if err != nil {
-		return api.ServiceInstance{}, err
+		return api.ServiceInstanceRef{}, err
 	}
 
 	return serviceInstance[0], nil

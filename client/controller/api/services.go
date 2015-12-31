@@ -64,10 +64,9 @@ type ServiceInstanceFields struct {
 	DashboardURL     string
 }
 
-// ServiceInstance is the definition the service instance
-type ServiceInstance struct {
-	ServiceInstanceFields
-	ServiceBindings []ServiceBindingFields
-	ServicePlan     ServicePlanFields
-	ServiceOffering ServiceOfferingFields
+// ServiceInstanceRef is the definition the service instance
+type ServiceInstanceRef struct {
+	ID       string `json:"uuid"`
+	PlanUUID string `json:"plan_uuid"`
+	Name     string `json:"name"`
 }
