@@ -86,6 +86,19 @@ const serviceBindingsFixture string = `
 
 func (c *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("DEIS_API_VERSION", version.APIVersion)
+
+	if req.URL.Path == "/v1/services" && reflect.DeepEqual(req.URL.Query()["name"], []string{"service_name"}) && req.Method == "GET" {
+		res.WriteHeader(http.StatusOK)
+		res.Write([]byte(servicesFixture))
+		return
+	}
+
+	if req.URL.Path == "/v1/service_instances" && reflect.DeepEqual(req.URL.Query()["name"], []string{"service_instance_name"}) && req.Method == "GET" {
+		res.WriteHeader(http.StatusOK)
+		res.Write([]byte(serviceInstancesFixture))
+		return
+	}
+
 	if req.URL.Path == "/v1/service_instances" && req.Method == "POST" {
 		var reqJSON map[string]interface{}
 		data, err := ioutil.ReadAll(req.Body)
@@ -111,15 +124,8 @@ func (c *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if req.URL.Path == "/v1/services" && reflect.DeepEqual(req.URL.Query()["name"], []string{"service_name"}) && req.Method == "GET" {
+	if req.URL.Path == "/v1/service_instances/service_instance_id" && req.Method == "DELETE" {
 		res.WriteHeader(http.StatusOK)
-		res.Write([]byte(servicesFixture))
-		return
-	}
-
-	if req.URL.Path == "/v1/service_instances" && reflect.DeepEqual(req.URL.Query()["name"], []string{"service_instance_name"}) && req.Method == "GET" {
-		res.WriteHeader(http.StatusOK)
-		res.Write([]byte(serviceInstancesFixture))
 		return
 	}
 
@@ -329,4 +335,24 @@ func TestUnbindServiceFailNoServiceInstanceNameFound(t *testing.T) {
 	err = ServiceUnbind(&c, "app_id", "not_exists_service_instance_name")
 
 	Expect(err.Error()).To(MatchRegexp("Can Not find service by service instance.*"))
+}
+
+func TestServiceDeleteSuccess(t *testing.T) {
+	RegisterTestingT(t)
+	t.Parallel()
+
+	server := httptest.NewServer(&fakeHTTPServer{})
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	err = ServiceDelete(&c, "service_instance_name")
+	Expect(err).To(BeNil())
 }

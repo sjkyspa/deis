@@ -30,6 +30,16 @@ func FindByName(c *client.Client, name string) (api.ServiceInstanceRef, error) {
 	return serviceInstance[0], nil
 }
 
+// Deprovision deprovision the service instance by the service name
+func Deprovision(c *client.Client, serviceInstanceID string) error {
+	_, err := c.BasicRequest("DELETE", fmt.Sprintf("/v1/service_instances/%s", serviceInstanceID), nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func extractResult(body string) (string, int, error) {
 	res := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(body), &res); err != nil {

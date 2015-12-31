@@ -63,8 +63,13 @@ func ServiceUpdate() error {
 }
 
 // ServiceDelete delete a service
-func ServiceDelete() error {
-	return nil
+func ServiceDelete(c *client.Client, serviceInstanceName string) error {
+	serviceInstance, err := serviceinstance.FindByName(c, serviceInstanceName)
+	if err != nil {
+		return err
+	}
+
+	return serviceinstance.Deprovision(c, serviceInstance.ID)
 }
 
 // ServiceRename rename the service
