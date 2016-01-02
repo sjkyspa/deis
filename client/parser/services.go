@@ -1,13 +1,9 @@
 package parser
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/deis/deis/client/cmd"
 	"github.com/deis/deis/client/controller/client"
 	docopt "github.com/docopt/docopt-go"
-	"io/ioutil"
-	"strings"
 )
 
 // Services routes app commands to their specific function.
@@ -105,28 +101,9 @@ Options:
 	serviceName := safeGetValue(args, "<service-name>")
 	planName := safeGetValue(args, "<plan-name>")
 	serviceInstanceName := safeGetValue(args, "<service-instance-name>")
-	var configJSON map[string]interface{}
-	config := safeGetValue(args, "--config")
-
-	if config != "" {
-		if strings.HasPrefix(config, "@") {
-			configFile := strings.TrimLeft(config, "@")
-			content, err := ioutil.ReadFile(configFile)
-			if err != nil {
-				return fmt.Errorf("Please check the file realily exists")
-			}
-
-			err = json.Unmarshal(content, &configJSON)
-			if err != nil {
-				return fmt.Errorf("Please ensure the json in config file is valid")
-			}
-		} else {
-			err = json.Unmarshal([]byte(config), &configJSON)
-
-			if err != nil {
-				return fmt.Errorf("Pleases provide the valid json as the additional parameters")
-			}
-		}
+	jsonConfig, err := safeGetJSONConfig(args, "--config")
+	if err != nil {
+		return err
 	}
 
 	c, err := client.New()
@@ -135,7 +112,7 @@ Options:
 		return err
 	}
 
-	return cmd.ServiceCreate(c, serviceName, planName, serviceInstanceName, configJSON)
+	return cmd.ServiceCreate(c, serviceName, planName, serviceInstanceName, jsonConfig)
 }
 
 func serviceUpdate(argv []string) error {

@@ -1,9 +1,12 @@
 package parser
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func safeGetValue(args map[string]interface{}, key string) string {
@@ -11,6 +14,36 @@ func safeGetValue(args map[string]interface{}, key string) string {
 		return ""
 	}
 	return args[key].(string)
+}
+
+func safeGetJSONConfig(args map[string]interface{}, key string) (map[string]interface{}, error) {
+	if args[key] == nil {
+		return make(map[string]interface{}), nil
+	}
+
+	config := args[key].(string)
+
+	configJSON := make(map[string]interface{})
+	if strings.HasPrefix(config, "@") {
+		configFile := strings.TrimLeft(config, "@")
+		content, err := ioutil.ReadFile(configFile)
+		if err != nil {
+			return make(map[string]interface{}), fmt.Errorf("Please check the file realily exists")
+		}
+
+		err = json.Unmarshal(content, &configJSON)
+		if err != nil {
+			return make(map[string]interface{}), fmt.Errorf("Please ensure the json in config file is valid")
+		}
+	} else {
+		err := json.Unmarshal([]byte(config), &configJSON)
+
+		if err != nil {
+			return make(map[string]interface{}), fmt.Errorf("Pleases provide the valid json as the additional parameters")
+		}
+	}
+
+	return configJSON, nil
 }
 
 func responseLimit(limit string) (int, error) {
