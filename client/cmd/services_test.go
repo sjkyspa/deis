@@ -161,7 +161,7 @@ func (c *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusNotFound)
 }
 
-func TestCreateServiceList(t *testing.T) {
+func TestServiceList(t *testing.T) {
 	RegisterTestingT(t)
 	t.Parallel()
 
@@ -198,7 +198,8 @@ func TestCreateServiceSuccess(t *testing.T) {
 	httpClient := client.CreateHTTPClient(false)
 	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	err = ServiceCreate(&c, "service_name", "plan_name", "service_instance_name")
+	configJSON := make(map[string]interface{})
+	err = ServiceCreate(&c, "service_name", "plan_name", "service_instance_name", configJSON)
 
 	Expect(err).To(BeNil())
 }
@@ -219,7 +220,8 @@ func TestCreateServiceFailPlanNotFound(t *testing.T) {
 	httpClient := client.CreateHTTPClient(false)
 	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	err = ServiceCreate(&c, "service_name", "not_existed_plan", "service_instance_name")
+	configJSON := make(map[string]interface{})
+	err = ServiceCreate(&c, "service_name", "not_existed_plan", "service_instance_name", configJSON)
 
 	Expect(err).NotTo(BeNil())
 }
@@ -240,7 +242,8 @@ func TestCreateServiceFailServiceNameNotFound(t *testing.T) {
 	httpClient := client.CreateHTTPClient(false)
 	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	err = ServiceCreate(&c, "not_existed_service_name", "plan_name", "service_instance_name")
+	configJSON := make(map[string]interface{})
+	err = ServiceCreate(&c, "not_existed_service_name", "plan_name", "service_instance_name", configJSON)
 
 	Expect(err).NotTo(BeNil())
 }
@@ -261,7 +264,8 @@ func TestCreateServiceFailDuplicatedServiceInstanceName(t *testing.T) {
 	httpClient := client.CreateHTTPClient(false)
 	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	err = ServiceCreate(&c, "service_name", "plan_name", "duplicated_service_instance_name")
+	configJSON := make(map[string]interface{})
+	err = ServiceCreate(&c, "service_name", "plan_name", "duplicated_service_instance_name", configJSON)
 
 	Expect(err).NotTo(BeNil())
 }

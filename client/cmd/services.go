@@ -41,7 +41,7 @@ func ServiceList(c *client.Client, results int) error {
 }
 
 // ServiceCreate creates an service.
-func ServiceCreate(c *client.Client, serviceName, planName, serviceInstanceName string) error {
+func ServiceCreate(c *client.Client, serviceName, planName, serviceInstanceName string, config map[string]interface{}) error {
 	service, err := services.FindByName(c, serviceName)
 	if err != nil {
 		return err
