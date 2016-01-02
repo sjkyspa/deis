@@ -286,7 +286,8 @@ func TestBindServiceSuccess(t *testing.T) {
 	httpClient := client.CreateHTTPClient(false)
 	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	err = ServiceBind(&c, "app_name", "service_instance_name")
+	parameter := make(map[string]interface{})
+	err = ServiceBind(&c, "app_name", "service_instance_name", parameter)
 
 	Expect(err).To(BeNil())
 }
@@ -307,7 +308,8 @@ func TestBindServiceFailServiceInstanceNotFound(t *testing.T) {
 	httpClient := client.CreateHTTPClient(false)
 	c := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	err = ServiceBind(&c, "app_id", "not_existed_service_instance_name")
+	parameter := make(map[string]interface{})
+	err = ServiceBind(&c, "app_id", "not_existed_service_instance_name", parameter)
 
 	Expect(err).NotTo(BeNil())
 }

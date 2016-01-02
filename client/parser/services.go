@@ -131,11 +131,10 @@ func serviceBind(argv []string) error {
 	usage := `
 Create service instance visible to the current user.
 
-Usage: deis services:bind <app-name> <service-instance-name> [-c <config>]
+Usage: deis services:bind <app-name> <service-instance-name>
 
 Options:
-  -c
-    the config for the service when instantiation
+  -c, --config the config for the service when instantiation
 `
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
@@ -144,13 +143,17 @@ Options:
 	}
 	appName := safeGetValue(args, "<app-name>")
 	serviceInstanceName := safeGetValue(args, "<service-instance-name>")
+	jsonConfig, err := safeGetJSONConfig(args, "--config")
+	if err != nil {
+		return err
+	}
 
 	c, err := client.New()
 
 	if err != nil {
 		return err
 	}
-	return cmd.ServiceBind(c, appName, serviceInstanceName)
+	return cmd.ServiceBind(c, appName, serviceInstanceName, jsonConfig)
 }
 
 func serviceUnbind(argv []string) error {

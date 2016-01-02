@@ -83,12 +83,12 @@ func ServiceRename() error {
 }
 
 // ServiceBind bind the service to the app
-func ServiceBind(c *client.Client, appName, serviceInstanceName string) error {
+func ServiceBind(c *client.Client, appName, serviceInstanceName string, parameter map[string]interface{}) error {
 	serviceInstance, err := serviceinstance.FindByName(c, serviceInstanceName)
 	if err != nil {
 		return err
 	}
-	err = servicebinding.Bind(c, serviceInstance.ID, appName, nil)
+	err = servicebinding.Bind(c, serviceInstance.ID, appName, parameter)
 	if err != nil {
 		return err
 	}
